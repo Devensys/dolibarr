@@ -113,7 +113,7 @@ class Expedition extends CommonObject
 	/**
 	 *	Return next contract ref
 	 *
-	 *	@param	Societe		$soc	Objet society
+	 *	@param	Societe		$soc	Thirdparty object
 	 *	@return string				Free reference for contract
 	 */
 	function getNextNumRef($soc)
@@ -121,21 +121,30 @@ class Expedition extends CommonObject
 		global $db, $langs, $conf;
 		$langs->load("sendings");
 
-		$dir = DOL_DOCUMENT_ROOT . "/core/modules/expedition";
-
-	    if (empty($conf->global->EXPEDITION_ADDON_NUMBER))
+	    if (!empty($conf->global->EXPEDITION_ADDON_NUMBER))
         {
-            $conf->global->EXPEDITION_ADDON_NUMBER='mod_expedition_safor';
-        }
+			$mybool = false;
 
-		$file = $conf->global->EXPEDITION_ADDON_NUMBER.".php";
+			$file = $conf->global->EXPEDITION_ADDON_NUMBER.".php";
+			$classname = $conf->global->EXPEDITION_ADDON_NUMBER;
 
-		// Chargement de la classe de numerotation
-		$classname = $conf->global->EXPEDITION_ADDON_NUMBER;
+	        // Include file with class
+	        $dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
 
-		$result=include_once $dir.'/'.$file;
-		if ($result)
-		{
+	        foreach ($dirmodels as $reldir) {
+
+		        $dir = dol_buildpath($reldir."core/modules/expedition/");
+
+		        // Load file with numbering class (if found)
+		        $mybool|=@include_once $dir.$file;
+	        }
+
+	        if (! $mybool)
+	        {
+		        dol_print_error('',"Failed to include file ".$file);
+		        return '';
+	        }
+
 			$obj = new $classname();
 			$numref = "";
 			$numref = $obj->getNextValue($soc,$this);
@@ -149,12 +158,12 @@ class Expedition extends CommonObject
 				dol_print_error($db,get_class($this)."::getNextNumRef ".$obj->error);
 				return "";
 			}
-		}
-		else
-		{
-			print $langs->trans("Error")." ".$langs->trans("Error_EXPEDITION_ADDON_NUMBER_NotDefined");
-			return "";
-		}
+        }
+	    else
+	    {
+		    print $langs->trans("Error")." ".$langs->trans("Error_EXPEDITION_ADDON_NUMBER_NotDefined");
+		    return "";
+	    }
 	}
 
 	/**
@@ -604,9 +613,11 @@ class Expedition extends CommonObject
 
 					if (! empty($conf->productbatch->enabled)) {
 						$details=ExpeditionLigneBatch::FetchAll($this->db,$obj->rowid);
-						foreach ($details as $dbatch) {
-							$result=$mouvS->livraison_batch($dbatch->fk_origin_stock,$dbatch->dluo_qty);
-							if ($result < 0) { $error++; $this->errors[]=$mouvS->$error; break 2; }
+						if (! empty($details)) {
+							foreach ($details as $dbatch) {
+								$result=$mouvS->livraison_batch($dbatch->fk_origin_stock,$dbatch->dluo_qty);
+								if ($result < 0) { $error++; $this->errors[]=$mouvS->$error; break 2; }
+							}
 						}
 					}
 				}
@@ -1217,7 +1228,7 @@ class Expedition extends CommonObject
 		$picto='sending';
 		$label=$langs->trans("ShowSending").': '.$this->ref;
 
-		if ($withpicto) $result.=($linkstart.img_object($label,$picto).$linkend);
+		if ($withpicto) $result.=($linkstart.img_object($label, $picto, 'class="classfortooltip"').$linkend);
 		if ($withpicto && $withpicto != 2) $result.=' ';
 		$result.=$linkstart.$this->ref.$linkend;
 		return $result;

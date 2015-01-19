@@ -41,6 +41,7 @@ $langs->load('companies');
 $langs->load('commercial');
 
 $action	= GETPOST('action');
+$cancelbutton = GETPOST('cancel');
 
 // Security check
 $id = (GETPOST('socid','int') ? GETPOST('socid','int') : GETPOST('id','int'));
@@ -60,30 +61,37 @@ $parameters=array('socid'=>$socid);
 $reshook=$hookmanager->executeHooks('doActions', $parameters, $object, $action);    // Note that $action and $object may have been modified by some hooks
 if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
 
-if ($action == 'setsupplieraccountancycode')
+if (empty($reshook))
 {
-    $result=$object->fetch($id);
-    $object->code_compta_fournisseur=$_POST["supplieraccountancycode"];
-    $result=$object->update($object->id,$user,1,0,1);
-    if ($result < 0)
-    {
-        $mesg=join(',',$object->errors);
-    }
-    $action="";
-}
-// conditions de reglement
-if ($action == 'setconditions' && $user->rights->societe->creer)
-{
-	$object->fetch($id);
-	$result=$object->setPaymentTerms(GETPOST('cond_reglement_supplier_id','int'));
-	if ($result < 0) dol_print_error($db,$object->error);
-}
-// mode de reglement
-if ($action == 'setmode' && $user->rights->societe->creer)
-{
-	$object->fetch($id);
-	$result=$object->setPaymentMethods(GETPOST('mode_reglement_supplier_id','int'));
-	if ($result < 0) dol_print_error($db,$object->error);
+	if ($cancelbutton)
+	{
+		$action = "";
+	}
+
+	if ($action == 'setsupplieraccountancycode')
+	{
+		$result=$object->fetch($id);
+   		$object->code_compta_fournisseur=$_POST["supplieraccountancycode"];
+	    $result=$object->update($object->id,$user,1,0,1);
+	    if ($result < 0)
+	    {
+	        $mesg=join(',',$object->errors);
+	    }
+	}
+	// conditions de reglement
+	if ($action == 'setconditions' && $user->rights->societe->creer)
+	{
+		$object->fetch($id);
+		$result=$object->setPaymentTerms(GETPOST('cond_reglement_supplier_id','int'));
+		if ($result < 0) dol_print_error($db,$object->error);
+	}
+	// mode de reglement
+	if ($action == 'setmode' && $user->rights->societe->creer)
+	{
+		$object->fetch($id);
+		$result=$object->setPaymentMethods(GETPOST('mode_reglement_supplier_id','int'));
+		if ($result < 0) dol_print_error($db,$object->error);
+	}
 }
 
 
@@ -94,12 +102,22 @@ if ($action == 'setmode' && $user->rights->societe->creer)
 $contactstatic = new Contact($db);
 $form = new Form($db);
 
-if ($object->fetch($id))
+if ($id > 0 && empty($object->id))
 {
-	llxHeader('',$langs->trans('SupplierCard'));
+	// Load data of third party
+	$res=$object->fetch($id);
+	if ($object->id <= 0) dol_print_error($db,$object->error);
+}
+
+if ($object->id > 0)
+{
+	$title=$langs->trans("SupplierCard");
+	if (! empty($conf->global->MAIN_HTML_TITLE) && preg_match('/thirdpartynameonly/',$conf->global->MAIN_HTML_TITLE) && $object->name) $title=$object->name;
+	$help_url='';
+	llxHeader('',$title, $help_url);
 
 	/*
-	 * Affichage onglets
+	 * Show tabs
 	 */
 	$head = societe_prepare_head($object);
 
@@ -174,24 +192,15 @@ if ($object->fetch($id))
 	print '</tr>';
 
 	// Local Taxes
-	if($mysoc->localtax1_assuj=="1" && $mysoc->localtax2_assuj=="1")
+	if ($mysoc->useLocalTax(1))
 	{
-		print '<tr><td class="nowrap">'.$langs->trans('LocalTax1IsUsedES').'</td><td colspan="3">';
-		print yn($object->localtax1_assuj);
-		print '</td></tr>';
-		print '<tr><td class="nowrap">'.$langs->trans('LocalTax2IsUsedES').'</td><td colspan="3">';
-		print yn($object->localtax2_assuj);
-		print '</td></tr>';
-	}
-	elseif($mysoc->localtax1_assuj=="1")
-	{
-		print '<tr><td>'.$langs->trans("LocalTax1IsUsedES").'</td><td colspan="3">';
+		print '<tr><td class="nowrap">'.$langs->trans("LocalTax1IsUsed").'</td><td colspan="3">';
 		print yn($object->localtax1_assuj);
 		print '</td></tr>';
 	}
-	elseif($mysoc->localtax2_assuj=="1")
+	if ($mysoc->useLocalTax(2))
 	{
-		print '<tr><td>'.$langs->trans("LocalTax2IsUsedES").'</td><td colspan="3">';
+		print '<tr><td class="nowrap">'.$langs->trans("LocalTax2IsUsed").'</td><td colspan="3">';
 		print yn($object->localtax2_assuj);
 		print '</td></tr>';
 	}
@@ -400,7 +409,7 @@ if ($object->fetch($id))
 		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'paiementfourn_facturefourn as pf ON f.rowid=pf.fk_facturefourn';
 		$sql.= ' WHERE f.fk_soc = '.$object->id;
 		$sql.= " AND f.entity =".$conf->entity;
-		$sql.= ' GROUP BY f.rowid,f.libelle,f.ref_supplier,f.fk_statut,f.datef,f.total_ttc,f.paye';
+		$sql.= ' GROUP BY f.rowid,f.libelle,f.ref,f.ref_supplier,f.fk_statut,f.datef,f.total_ttc,f.paye';
 		$sql.= ' ORDER BY f.datef DESC';
 		$resql=$db->query($sql);
 		if ($resql)

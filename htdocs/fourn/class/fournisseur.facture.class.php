@@ -43,6 +43,11 @@ class FactureFournisseur extends CommonInvoice
     public $fk_element='fk_facture_fourn';
     protected $ismultientitymanaged = 1;	// 0=No test on entity, 1=Test with field entity, 2=Test with link by societe
 
+    /**
+     * {@inheritdoc}
+     */
+    protected $table_ref_field = 'ref';
+
     var $rowid;
     var $ref;
     var $product_ref;
@@ -1484,7 +1489,7 @@ class FactureFournisseur extends CommonInvoice
         $ref=$this->ref;
         if (empty($ref)) $ref=$this->id;
 
-        if ($withpicto) $result.=($lien.img_object($label,'bill').$lienfin.' ');
+        if ($withpicto) $result.=($lien.img_object($label, 'bill', 'class="classfortooltip"').$lienfin.' ');
         $result.=$lien.($max?dol_trunc($ref,$max):$ref).$lienfin;
         return $result;
     }
@@ -1493,7 +1498,7 @@ class FactureFournisseur extends CommonInvoice
       *      Return next reference of supplier invoice not already used (or last reference)
       *      according to numbering module defined into constant INVOICE_SUPPLIER_ADDON_NUMBER
       *
-      *      @param	   Society		$soc		object company
+      *      @param	   Societe		$soc		Thirdparty object
       *      @param    string		$mode		'next' for next value or 'last' for last value
       *      @return   string					free ref or last ref
       */
@@ -1509,10 +1514,14 @@ class FactureFournisseur extends CommonInvoice
 
         $file = $conf->global->INVOICE_SUPPLIER_ADDON_NUMBER.".php";
         $classname = $conf->global->INVOICE_SUPPLIER_ADDON_NUMBER;
+
         // Include file with class
-        foreach ($conf->file->dol_document_root as $dirroot)
-        {
-            $dir = $dirroot."/core/modules/supplier_invoice/";
+        $dirmodels = array_merge(array('/'), (array) $conf->modules_parts['models']);
+
+        foreach ($dirmodels as $reldir) {
+
+            $dir = dol_buildpath($reldir."core/modules/supplier_invoice/");
+
             // Load file with numbering class (if found)
             $mybool|=@include_once $dir.$file;
         }

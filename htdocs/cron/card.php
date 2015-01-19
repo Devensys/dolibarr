@@ -353,16 +353,20 @@ if (($action=="create") || ($action=="edit"))
 	print "<tr><td>";
 	print $langs->trans('CronEvery')."</td>";
 	print "<td><select name=\"nbfrequency\">";
-	for($i=1; $i<=60; $i++){
-		if(($object->frequency/$object->unitfrequency) == $i){
+	for($i=1; $i<=60; $i++)
+	{
+		if (! empty($object->unitfrequency) && ($object->frequency/$object->unitfrequency) == $i)
+		{
 			print "<option value='".$i."' selected='selected'>".$i."</option>";
 		}
-		else{
+		else
+		{
 			print "<option value='".$i."'>".$i."</option>";
 		}
 	}
 	$input = "<input type=\"radio\" name=\"unitfrequency\" value=\"60\" id=\"frequency_minute\" ";
-	if($object->unitfrequency=="60"){
+	if($object->unitfrequency=="60")
+	{
 		$input .= ' checked="checked" />';
 	}
 	else{
@@ -472,8 +476,9 @@ if (($action=="create") || ($action=="edit"))
 
 	print '<div align="center"><br>';
 	print '<input type="submit" name="save" class="button" value="'.$langs->trans("Save").'">';
+	print '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 	print '<input type="submit" name="cancel" class="button" value="'.$langs->trans("Cancel").'">';
-	print "</center>";
+	print "</div>";
 
 	print "</form>\n";
 

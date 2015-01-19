@@ -18,6 +18,7 @@
 -- -- VPGSQL8.2 DELETE FROM llx_usergroup_user      WHERE fk_user      NOT IN (SELECT rowid from llx_user);
 -- -- VMYSQL4.1 DELETE FROM llx_usergroup_user      WHERE fk_usergroup NOT IN (SELECT rowid from llx_usergroup);
 
+INSERT INTO llx_c_forme_juridique (fk_pays, code, libelle, active) VALUES (1, '60', 'Entreprise Individuelle à Responsabilité Limitée (EIRL)', 1);
 
 --insert into llx_c_action_trigger (code,label,description,elementtype,rang) values ('FICHINTER_MODIFY','Intervention modified','Executed when a intervention is modified','ficheinter',19);
 --insert into llx_c_action_trigger (code,label,description,elementtype,rang) values ('FICHINTER_DELETE','Intervention delete','Executed when a intervention is delete','ficheinter',19);
@@ -90,7 +91,6 @@ ALTER TABLE llx_bank_account ADD COLUMN accountancy_journal varchar(3) DEFAULT N
 
 ALTER TABLE llx_accountingaccount add column entity integer DEFAULT 1 NOT NULL AFTER rowid;
 ALTER TABLE llx_accountingaccount add column datec datetime AFTER entity;
-ALTER TABLE llx_accountingaccount add column tms timestamp AFTER datec;
 ALTER TABLE llx_accountingaccount add column fk_user_author integer DEFAULT NULL AFTER label;
 ALTER TABLE llx_accountingaccount add column fk_user_modif integer DEFAULT NULL AFTER fk_user_author;
 
@@ -102,6 +102,8 @@ UPDATE llx_const SET name = 'ACCOUNTING_PRODUCT_BUY_ACCOUNT' WHERE name = 'COMPT
 UPDATE llx_const SET name = 'ACCOUNTING_PRODUCT_SOLD_ACCOUNT' WHERE name = 'COMPTA_PRODUCT_SOLD_ACCOUNT';
 UPDATE llx_const SET name = 'ACCOUNTING_SERVICE_BUY_ACCOUNT' WHERE name = 'COMPTA_SERVICE_BUY_ACCOUNT';
 UPDATE llx_const SET name = 'ACCOUNTING_SERVICE_SOLD_ACCOUNT' WHERE name = 'COMPTA_SERVICE_SOLD_ACCOUNT';
+UPDATE llx_const SET name = 'ACCOUNTING_VAT_ACCOUNT' WHERE name = 'COMPTA_VAT_ACCOUNT';
+UPDATE llx_const SET name = 'ACCOUNTING_VAT_BUY_ACCOUNT' WHERE name = 'COMPTA_VAT_BUY_ACCOUNT';
 
 -- Compatibility with module Accounting Expert
 UPDATE llx_const SET name = 'ACCOUNTING_SEPARATORCSV' WHERE name = 'ACCOUNTINGEX_SEPARATORCSV';
@@ -127,6 +129,7 @@ DROP TABLE llx_compta_compte_generaux;
 -- Align size for accounting account
 ALTER TABLE llx_accountingaccount MODIFY COLUMN account_number varchar(32);
 ALTER TABLE llx_accountingaccount MODIFY COLUMN account_parent varchar(32);
+ALTER TABLE llx_accountingaccount add column tms timestamp AFTER datec;
 ALTER TABLE llx_accountingdebcred MODIFY COLUMN account_number varchar(32);
 ALTER TABLE llx_bank_account MODIFY COLUMN account_number varchar(32);
 ALTER TABLE llx_c_chargesociales MODIFY COLUMN accountancy_code varchar(32);
@@ -149,6 +152,9 @@ ALTER TABLE llx_user ADD COLUMN weeklyhours double(16,8);
 ALTER TABLE llx_projet_task_time ADD COLUMN task_datehour datetime after task_date;
 
 ALTER TABLE llx_actioncomm_resources CHANGE COLUMN transparent transparency smallint default 1;
+
+ALTER TABLE llx_actioncomm_resources DROP INDEX idx_actioncomm_resources_idx1;
+ALTER TABLE llx_actioncomm_resources ADD UNIQUE INDEX uk_actioncomm_resources(fk_actioncomm, element_type, fk_element);
 
 
 -- Localtaxes by thirds
@@ -217,8 +223,8 @@ create table llx_accounting_fiscalyear
 	fk_user_modif	integer NULL
 )ENGINE=innodb;
 
-ALTER TABLE llx_contrat ADD COLUMN ref_ext varchar(30) after ref;
-ALTER TABLE llx_contrat ADD COLUMN ref_supplier varchar(30) after ref_ext;
+ALTER TABLE llx_contrat ADD COLUMN ref_supplier varchar(30) after ref;
+ALTER TABLE llx_contrat ADD COLUMN ref_ext varchar(30) after ref_supplier;
 
 ALTER TABLE llx_propal ADD COLUMN fk_shipping_method integer AFTER date_livraison;
 ALTER TABLE llx_commande ADD COLUMN fk_shipping_method integer AFTER date_livraison;
@@ -1133,7 +1139,14 @@ ALTER TABLE llx_facture_fourn MODIFY COLUMN ref VARCHAR(255);
 ALTER TABLE llx_facture_fourn MODIFY COLUMN ref_ext VARCHAR(255);
 ALTER TABLE llx_facture_fourn MODIFY COLUMN ref_supplier VARCHAR(255);
 
+UPDATE llx_facture_fourn SET ref = rowid WHERE ref IS NULL or ref = '';
+
+ALTER TABLE llx_facture_rec ADD COLUMN revenuestamp double(24,8) DEFAULT 0;
+ALTER TABLE llx_facturedet_rec MODIFY COLUMN tva_tx double(6,3);
+ALTER TABLE llx_facturedet_rec ADD COLUMN fk_contract_line integer NULL;
+
+ALTER TABLE llx_resource MODIFY COLUMN entity integer DEFAULT 1 NOT NULL;
 
 -- This request make mysql drop (mysql bug, so we add it at end):
---ALTER TABLE llx_product ADD CONSTRAINT fk_product_barcode_type FOREIGN KEY (fk_barcode_type) REFERENCES llx_c_barcode_type(rowid);
+ALTER TABLE llx_product ADD CONSTRAINT fk_product_barcode_type FOREIGN KEY (fk_barcode_type) REFERENCES llx_c_barcode_type(rowid);
 

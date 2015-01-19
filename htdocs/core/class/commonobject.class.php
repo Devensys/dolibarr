@@ -3,10 +3,11 @@
  * Copyright (C) 2005-2013 Regis Houssin        <regis.houssin@capnetworks.com>
  * Copyright (C) 2010-2013 Juanjo Menent        <jmenent@2byte.es>
  * Copyright (C) 2012      Christophe Battarel  <christophe.battarel@altairis.fr>
- * Copyright (C) 2010-2011 Juanjo Menent        <jmenent@2byte.es>
+ * Copyright (C) 2010-2014 Juanjo Menent        <jmenent@2byte.es>
  * Copyright (C) 2012-2013 Christophe Battarel  <christophe.battarel@altairis.fr>
  * Copyright (C) 2011-2014 Philippe Grand	    <philippe.grand@atoo-net.com>
- * Copyright (C) 2012      Marcos García        <marcosgdf@gmail.com>
+ * Copyright (C) 2012-2014 Marcos García        <marcosgdf@gmail.com>
+ * Copyright (C) 2012-2014 Raphaël Doursenaud   <rdoursenaud@gpcsolutions.fr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,8 +36,18 @@
 abstract class CommonObject
 {
     public $db;
+
+    /**
+     * @var error 	Error string
+     * @deprecated	Use instead the array of error strings
+     */
     public $error;
+
+    /**
+     * @var errors	Aray of error string
+     */
     public $errors;
+
     public $canvas;                // Contains canvas name if it is
 
     public $name;
@@ -47,12 +58,21 @@ abstract class CommonObject
 
     public $array_options=array();
 
+    /**
+     * @var Societe
+     */
     public $thirdparty;
 
     public $linkedObjectsIds;	// Loaded by ->fetchObjectLinked
     public $linkedObjects;		// Loaded by ->fetchObjectLinked
 
     // No constructor as it is an abstract class
+
+    /**
+     * Column name of the ref field.
+     * @var string
+     */
+    protected $table_ref_field = '';
 
 
     /**
@@ -601,20 +621,22 @@ abstract class CommonObject
     /**
      *    	Load the third party of object, from id $this->socid or $this->fk_soc, into this->thirdparty
      *
-     *		@return		int					<0 if KO, >0 if OK
+     *		@param		int		$force_thirdparty_id	Force thirdparty id
+     *		@return		int								<0 if KO, >0 if OK
      */
-    function fetch_thirdparty()
+    function fetch_thirdparty($force_thirdparty_id=0)
     {
         global $conf;
 
-        if (empty($this->socid) && empty($this->fk_soc) && empty($this->fk_thirdparty)) return 0;
+        if (empty($this->socid) && empty($this->fk_soc) && empty($this->fk_thirdparty) && empty($force_thirdparty_id)) return 0;
 
 	    require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
 
-	require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
+	    $idtofetch=isset($this->socid)?$this->socid:(isset($this->fk_soc)?$this->fk_soc:$this->fk_thirdparty);
+		if ($force_thirdparty_id) $idtofetch=$force_thirdparty_id;
 
         $thirdparty = new Societe($this->db);
-        $result=$thirdparty->fetch(isset($this->socid)?$this->socid:(isset($this->fk_soc)?$this->fk_soc:$this->fk_thirdparty));
+        $result=$thirdparty->fetch($idtofetch);
         $this->client = $thirdparty;  // deprecated
         $this->thirdparty = $thirdparty;
 
@@ -630,8 +652,34 @@ abstract class CommonObject
 
 
     /**
+     * Looks for an object with ref matching the wildcard provided
+     * It does only work when $this->table_ref_field is set
+     *
+     * @param string $ref Wildcard
+     * @return int >1 = OK, 0 = Not found or table_ref_field not defined, <0 = KO
+     */
+    public function fetchOneLike($ref)
+    {
+        if (!$this->table_ref_field) {
+            return 0;
+        }
+
+        $sql = 'SELECT rowid FROM '.MAIN_DB_PREFIX.$this->table_element.' WHERE '.$this->table_ref_field.' LIKE "'.$this->db->escape($ref).'" LIMIT 1';
+
+        $query = $this->db->query($sql);
+
+        if (!$this->db->num_rows($query)) {
+            return 0;
+        }
+
+        $result = $this->db->fetch_object($query);
+
+        return $this->fetch($result->rowid);
+    }
+
+    /**
      *	Load data for barcode into properties ->barcode_type*
-     *	Properties ->barcode_type that is id of barcode type is used to find other properties, but
+     *	Properties ->barcode_type that is id of barcode. Type is used to find other properties, but
      *  if it is not defined, ->element must be defined to know default barcode type.
      *
      *	@return		int			<0 if KO, 0 if can't guess type of barcode (ISBN, EAN13...), >0 if OK (all barcode properties loaded)
@@ -1696,6 +1744,19 @@ abstract class CommonObject
             // Add revenue stamp to total
             $this->total_ttc       += isset($this->revenuestamp)?$this->revenuestamp:0;
 
+			// Situations totals
+			if ($this->situation_cycle_ref && $this->situation_counter > 1) {
+				$prev_sits = $this->get_prev_sits();
+
+				foreach ($prev_sits as $sit) {
+					$this->total_ht -= $sit->total_ht;
+					$this->total_tva -= $sit->total_tva;
+					$this->total_localtax1 -= $sit->total_localtax1;
+					$this->total_localtax2 -= $sit->total_localtax2;
+					$this->total_ttc -= $sit->total_ttc;
+				}
+			}
+
             $this->db->free($resql);
 
             // Now update global field total_ht, total_ttc and tva
@@ -1849,7 +1910,7 @@ abstract class CommonObject
             }
         }
         else
-        {
+		{
             $sql.= "(fk_source = '".$sourceid."' AND sourcetype = '".$sourcetype."')";
             $sql.= " ".$clause." (fk_target = '".$targetid."' AND targettype = '".$targettype."')";
         }
@@ -2075,24 +2136,23 @@ abstract class CommonObject
         dol_syslog(get_class($this)."::setStatut", LOG_DEBUG);
         if ($this->db->query($sql))
         {
-        	if (! $error)
-			{
-				$trigkey='';
-				if ($this->element == 'fichinter' && $status == 2) $trigkey='FICHINTER_CLASSIFY_BILLED';
-				if ($this->element == 'fichinter' && $status == 1) $trigkey='FICHINTER_CLASSIFY_UNBILLED';
+            $error = 0;
 
-				if ($trigkey)
-				{
-					// Appel des triggers
-					include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
-					$interface=new Interfaces($this->db);
-					$result=$interface->run_triggers($trigkey,$this,$user,$langs,$conf);
-		 			if ($result < 0) {
-		 				$error++; $this->errors=$interface->errors;
-		 			}
-					// Fin appel triggers
-				}
-			}
+            $trigkey='';
+            if ($this->element == 'fichinter' && $status == 2) $trigkey='FICHINTER_CLASSIFY_BILLED';
+            if ($this->element == 'fichinter' && $status == 1) $trigkey='FICHINTER_CLASSIFY_UNBILLED';
+
+            if ($trigkey)
+            {
+                // Appel des triggers
+                include_once DOL_DOCUMENT_ROOT . '/core/class/interfaces.class.php';
+                $interface=new Interfaces($this->db);
+                $result=$interface->run_triggers($trigkey,$this,$user,$langs,$conf);
+                if ($result < 0) {
+                    $error++; $this->errors=$interface->errors;
+                }
+                // Fin appel triggers
+            }
 
 			if (! $error)
 			{
@@ -2145,7 +2205,6 @@ abstract class CommonObject
             $obj = $this->db->fetch_object($resql);
             if ($obj)
             {
-                $this->id       = $obj->rowid;
                 $this->canvas   = $obj->canvas;
                 return 1;
             }
@@ -2501,7 +2560,7 @@ abstract class CommonObject
 	 */
 	function printObjectLines($action, $seller, $buyer, $selected=0, $dateSelector=0)
 	{
-		global $conf,$langs,$user,$object,$hookmanager;
+		global $conf, $hookmanager, $inputalsopricewithtax, $langs, $user;
 
 		print '<tr class="liste_titre nodrag nodrop">';
 
@@ -2523,6 +2582,10 @@ abstract class CommonObject
 
 		// Reduction short
 		print '<td align="right" width="50"><label for="remise_percent">'.$langs->trans('ReductionShort').'</label></td>';
+
+		if ($this->situation_cycle_ref) {
+			print '<td align="right" width="50"><label for="progress">' . $langs->trans('Progress') . '</label></td>';
+		}
 
 		if (! empty($conf->margin->enabled) && empty($user->societe_id))
 		{
@@ -3014,30 +3077,33 @@ abstract class CommonObject
 
 		$marginInfo = $this->getMarginInfos($force_price);
 
-		print $langs->trans('ShowMarginInfos').' : ';
-        $hidemargininfos = $_COOKIE['DOLUSER_MARGININFO_HIDE_SHOW'];
-    	print '<span id="showMarginInfos" class="linkobject '.(!empty($hidemargininfos)?'':'hideobject').'">'.img_picto($langs->trans("Disabled"),'switch_off').'</span>';
-    	print '<span id="hideMarginInfos" class="linkobject '.(!empty($hidemargininfos)?'hideobject':'').'">'.img_picto($langs->trans("Enabled"),'switch_on').'</span>';
+		if (! empty($conf->global->MARGIN_ADD_SHOWHIDE_BUTTON))	// FIXME Warning this feature rely on an external js file that may be removed. Using native js function document.cookie should be better
+		{
+			print $langs->trans('ShowMarginInfos').' : ';
+	        $hidemargininfos = $_COOKIE['DOLUSER_MARGININFO_HIDE_SHOW'];
+	    	print '<span id="showMarginInfos" class="linkobject '.(!empty($hidemargininfos)?'':'hideobject').'">'.img_picto($langs->trans("Disabled"),'switch_off').'</span>';
+	    	print '<span id="hideMarginInfos" class="linkobject '.(!empty($hidemargininfos)?'hideobject':'').'">'.img_picto($langs->trans("Enabled"),'switch_on').'</span>';
 
-        print '<script>$(document).ready(function() {
-            $("span#showMarginInfos").click(function() { $.getScript( "'.dol_buildpath('/includes/jquery/plugins/jquerytreeview/lib/jquery.cookie.js', 1).'", function( data, textStatus, jqxhr ) { $.cookie("DOLUSER_MARGININFO_HIDE_SHOW", 0); $(".margininfos").show(); $("span#showMarginInfos").addClass("hideobject"); $("span#hideMarginInfos").removeClass("hideobject");})});
-            $("span#hideMarginInfos").click(function() { $.getScript( "'.dol_buildpath('/includes/jquery/plugins/jquerytreeview/lib/jquery.cookie.js', 1).'", function( data, textStatus, jqxhr ) { $.cookie("DOLUSER_MARGININFO_HIDE_SHOW", 1); $(".margininfos").hide(); $("span#hideMarginInfos").addClass("hideobject"); $("span#showMarginInfos").removeClass("hideobject");})});
-        });</script>';
-        if (!empty($hidemargininfos)) print '<script>$(document).ready(function() {$(".margininfos").hide();});</script>';
+    	    print '<script>$(document).ready(function() {
+        	    $("span#showMarginInfos").click(function() { $.getScript( "'.dol_buildpath('/includes/jquery/plugins/jquerytreeview/lib/jquery.cookie.js', 1).'", function( data, textStatus, jqxhr ) { $.cookie("DOLUSER_MARGININFO_HIDE_SHOW", 0); $(".margininfos").show(); $("span#showMarginInfos").addClass("hideobject"); $("span#hideMarginInfos").removeClass("hideobject");})});
+        	    $("span#hideMarginInfos").click(function() { $.getScript( "'.dol_buildpath('/includes/jquery/plugins/jquerytreeview/lib/jquery.cookie.js', 1).'", function( data, textStatus, jqxhr ) { $.cookie("DOLUSER_MARGININFO_HIDE_SHOW", 1); $(".margininfos").hide(); $("span#hideMarginInfos").addClass("hideobject"); $("span#showMarginInfos").removeClass("hideobject");})});
+      	        });</script>';
+    	    if (!empty($hidemargininfos)) print '<script>$(document).ready(function() {$(".margininfos").hide();});</script>';
+		}
 
-		print '<table class="nobordernopadding margintable" width="100%">';
+		print '<table class="noborder margintable" width="100%">';
 		print '<tr class="liste_titre">';
-		print '<td width="15%">'.$langs->trans('Margins').'</td>';
-		print '<td width="15%" align="right">'.$langs->trans('SellingPrice').'</td>';
+		print '<td class="liste_titre">'.$langs->trans('Margins').'</td>';
+		print '<td class="liste_titre" align="right">'.$langs->trans('SellingPrice').'</td>';
 		if ($conf->global->MARGIN_TYPE == "1")
-			print '<td width="15%" align="right">'.$langs->trans('BuyingPrice').'</td>';
+			print '<td class="liste_titre" align="right">'.$langs->trans('BuyingPrice').'</td>';
 		else
-			print '<td width="15%" align="right">'.$langs->trans('CostPrice').'</td>';
-		print '<td width="15%" align="right">'.$langs->trans('Margin').'</td>';
+			print '<td class="liste_titre" align="right">'.$langs->trans('CostPrice').'</td>';
+		print '<td class="liste_titre" align="right">'.$langs->trans('Margin').'</td>';
 		if (! empty($conf->global->DISPLAY_MARGIN_RATES))
-			print '<td align="right">'.$langs->trans('MarginRate').'</td>';
+			print '<td class="liste_titre" align="right">'.$langs->trans('MarginRate').'</td>';
 		if (! empty($conf->global->DISPLAY_MARK_RATES))
-			print '<td align="right">'.$langs->trans('MarkRate').'</td>';
+			print '<td class="liste_titre" align="right">'.$langs->trans('MarkRate').'</td>';
 		print '</tr>';
 
 		if (! empty($conf->product->enabled))
@@ -3598,7 +3664,7 @@ abstract class CommonObject
 						break;
 					}
 
-					$out .= '</td>'."\n";
+					$out .= '</td>';
 
 					if (! empty($conf->global->MAIN_EXTRAFIELDS_USE_TWO_COLUMS) && (($e % 2) == 1)) $out .= '</tr>';
 					else $out .= '</tr>';
@@ -3606,7 +3672,6 @@ abstract class CommonObject
 				}
 			}
 			$out .= "\n";
-			$out .= '<!-- /showOptionalsInput --> ';
 			$out .= '
 				<script type="text/javascript">
 				    jQuery(document).ready(function() {
@@ -3635,7 +3700,8 @@ abstract class CommonObject
 
 						setListDependencies();
 				    });
-				</script>';
+				</script>'."\n";
+			$out .= '<!-- /showOptionalsInput --> '."\n";
 		}
 		return $out;
 	}
