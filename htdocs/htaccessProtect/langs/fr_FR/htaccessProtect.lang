@@ -1,6 +1,6 @@
 ConfActive=Configuration Active
 EditConf=Editer la Configuration
-HtaccessContent=Contenu Htaccess
+HtaccessContent=Contenu htaccess/htpasswd
 DirRight=Droit du dossier racine
 FileExisteHtaccess=Info fichier htaccess
 FileExisteHtpasswd=Info fichier htpasword
@@ -15,3 +15,4 @@ name=Nom
 IP=Adresse IP
 delete=Supprimer
 add=Ajouter
+descmodule=Generation d'un simple fichier htaccess / htpasswd

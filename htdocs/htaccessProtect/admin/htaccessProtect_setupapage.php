@@ -299,103 +299,28 @@ if($o==1){
 
 // Tab HtaccessContent
 if($o==2){
+    print '<table class="noborder" width="100%">';
+    print '  <tr class="liste_titre">';
+    print '    <td>'.$langs->trans("ContenuHtaccess").'</td>';
+    print '  </tr>';
+    print '  <tr>';
+    print '    <td>
+        <pre><code>
 
+
+        </code></pre>
+    </td>';
+    print '  </tr>';
+    print '  <tr class="liste_titre">';
+    print '    <td>'.$langs->trans("ContenuHtpassword").'</td>';
+    print '  </tr>';
+    print '  <tr>';
+    print '    <td></td>';
+    print '  </tr>';
+    print '</table>';
 
 }
 dol_fiche_end();
-/*
-// Part to create
-if ($action == 'create')
-{
-
-
-    dol_fiche_head();
-
-    print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
-    print '<input type="hidden" name="action" value="add">';
-    print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
-
-    print '<table class="border centpercent">'."\n";
-    print '<tr><td class="fieldrequired">'.$langs->trans("Label").'</td><td>';
-    print '<input class="flat" type="text" size="36" name="label" value="'.$label.'">';
-    print '</td></tr>';
-
-    print '</table>'."\n";
-
-    print '<br>';
-
-    print '<div class="center"><input type="submit" class="button" name="add" value="'.$langs->trans("Create").'"> &nbsp; <input type="submit" class="button" name="cancel" value="'.$langs->trans("Cancel").'"></div>';
-
-    print '</form>';
-
-    dol_fiche_end();
-}
-
-
-
-// Part to edit record
-if (($id || $ref) && $action == 'edit')
-{
-    dol_fiche_head();
-
-    print '<form method="POST" action="'.$_SERVER["PHP_SELF"].'">';
-    print '<input type="hidden" name="action" value="add">';
-    print '<input type="hidden" name="backtopage" value="'.$backtopage.'">';
-    print '<input type="hidden" name="id" value="'.$object->id.'">';
-
-
-    print '<br>';
-
-    print '<div class="center"><input type="submit" class="button" name="add" value="'.$langs->trans("Create").'"></div>';
-
-    print '</form>';
-
-    dol_fiche_end();
-}
-
-
-
-// Part to show record
-if ($id && (empty($action) || $action == 'view'))
-{
-    dol_fiche_head();
-
-
-
-    dol_fiche_end();
-
-
-    // Buttons
-    print '<div class="tabsAction">'."\n";
-    $parameters=array();
-    $reshook=$hookmanager->executeHooks('addMoreActionsButtons',$parameters,$object,$action);    // Note that $action and $object may have been modified by hook
-    if ($reshook < 0) setEventMessages($hookmanager->error, $hookmanager->errors, 'errors');
-
-    if (empty($reshook))
-    {
-        if ($user->rights->mymodule->write)
-        {
-            print '<div class="inline-block divButAction"><a class="butAction" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=edit">'.$langs->trans("Modify").'</a></div>'."\n";
-        }
-
-        if ($user->rights->mymodule->delete)
-        {
-            if ($conf->use_javascript_ajax && empty($conf->dol_use_jmobile))	// We can't use preloaded confirm form with jmobile
-            {
-                print '<div class="inline-block divButAction"><span id="action-delete" class="butActionDelete">'.$langs->trans('Delete').'</span></div>'."\n";
-            }
-            else
-            {
-                print '<div class="inline-block divButAction"><a class="butActionDelete" href="'.$_SERVER["PHP_SELF"].'?id='.$object->id.'&amp;action=delete">'.$langs->trans('Delete').'</a></div>'."\n";
-            }
-        }
-    }
-    print '</div>'."\n";
-
-
-}
-*/
-
 // End of page
 llxFooter();
 $db->close();
