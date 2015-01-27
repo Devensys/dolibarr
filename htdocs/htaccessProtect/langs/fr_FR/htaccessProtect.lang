@@ -1,0 +1,17 @@
+ConfActive=Configuration Active
+EditConf=Editer la Configuration
+HtaccessContent=Contenu Htaccess
+DirRight=Droit du dossier racine
+FileExisteHtaccess=Info fichier htaccess
+FileExisteHtpasswd=Info fichier htpasword
+filemissing=Fichier absent du serveur
+fileok=Fichier correct
+fileko=Fichier modifier
+generalinfo=Information générale
+Ipfiltreinfo=Liste Ip
+whitelist=Autorisée
+blacklist=Bloquée
+name=Nom
+IP=Adresse IP
+delete=Supprimer
+add=Ajouter
