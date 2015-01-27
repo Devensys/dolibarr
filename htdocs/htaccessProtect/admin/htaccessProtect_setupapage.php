@@ -89,6 +89,7 @@ if ($o == 1) {
 
 
 
+
 /***************************************************
  * VIEW
  *
@@ -304,18 +305,33 @@ if($o==2){
     print '    <td>'.$langs->trans("ContenuHtaccess").'</td>';
     print '  </tr>';
     print '  <tr>';
-    print '    <td>
-        <pre><code>
+    print '    <td><pre style="padding: 5px"><code>';
+    // TODO recup vraie info
+    print 'Order deny,allow
+Allow from 82.127.50.242
+Deny from 109.190.14.152
+Deny from 109.190.151.33
+Deny from 109.190.36.128
 
+AuthType Basic
+AuthName "Restricted Area"
+AuthUserFile .htpasswd
+Require valid-user
 
-        </code></pre>
-    </td>';
+Deny from all
+Satisfy any';
+
+    print '    </code></pre></td>';
     print '  </tr>';
     print '  <tr class="liste_titre">';
     print '    <td>'.$langs->trans("ContenuHtpassword").'</td>';
     print '  </tr>';
     print '  <tr>';
-    print '    <td></td>';
+    print '    <td><pre style="padding: 5px"><code>';
+    // TODO recup vraie info
+    print 'test:$apr1$cn.tFYWL$tqaKkRGhdA2YmOW07Zfx4/';
+
+    print '    </code></pre></td>';
     print '  </tr>';
     print '</table>';
 

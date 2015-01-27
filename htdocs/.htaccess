@@ -1,13 +1,18 @@
-Order deny,allow
-Allow from 82.127.50.242
-Deny from 109.190.14.152
-Deny from 109.190.151.33
-Deny from 109.190.36.128
-Deny from all
-
 AuthType Basic
 AuthName "Restricted Area"
 AuthUserFile .htpasswd
 Require valid-user
 
+Order Allow,Deny
+Allow from all
+
+Allow from 82.127.50.242
+
+Deny from 109.190.14.152
+Deny from 109.190.151.33
+Deny from 109.190.36.128
+
+
+
 Satisfy any
+
