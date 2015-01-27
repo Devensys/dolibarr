@@ -395,4 +395,50 @@ class Htaccessprotectip extends CommonObject
 		
 	}
 
+
+
+
+	/**
+	 *  Load all objects in memory from the database
+	 *
+	 *  @return array
+	 */
+	function fetchAll()
+	{
+		global $langs;
+		$sql = "SELECT";
+		$sql.= " t.id,";
+		$sql.= " t.name,";
+		$sql.= " t.ip,";
+		$sql.= " t.trusted";
+
+
+		$sql.= " FROM ".MAIN_DB_PREFIX.$this->table_element." as t";
+
+		dol_syslog(get_class($this)."::fetchAll");
+		$resql=$this->db->query($sql);
+
+		if ($resql)
+		{
+			$num = $this->db->num_rows($resql);
+			$i = 0;
+			if ($num)
+			{
+				$return = array();
+				while ($i < $num)
+				{
+					$obj = $this->db->fetch_object($resql);
+					if ($obj)
+					{
+						$return[] = $obj;
+					}
+					$i++;
+				}
+
+				$this->db->free($resql);
+				return $return;
+			}
+		}
+	}
+
 }

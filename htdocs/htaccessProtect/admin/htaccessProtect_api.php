@@ -75,9 +75,6 @@ switch($action) {
         $result = $htaccessprotectip->delete($user);
         $return = dol_json_encode($result);
         break;
-    case 'list':
-        //TODO: List them all Teddy!
-        break;
 }
 
 

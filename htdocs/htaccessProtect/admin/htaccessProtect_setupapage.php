@@ -2,6 +2,9 @@
 
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
+require_once("../../filefunc.inc.php");
+require_once("../htaccessprotectip.class.php");
+
 
 /* Copyright (C) 2007-2010 Laurent Destailleur  <eldy@users.sourceforge.net>
 /* Copyright (C) 2014-2015  Teddy Andreotti <125155@supinfo.com>
@@ -28,6 +31,11 @@ dol_include_once('/module/class/skeleton_class.class.php');
 // Load traductions files requiredby by page
 $langs->load("htaccessProtect@htaccessProtect");
 
+// Load user and its permissions
+$result=$user->fetch('','admin');	// Load user for login 'admin'. Comment line to run as anonymous user.
+if (! $result > 0) { dol_print_error('',$user->error); exit; }
+$user->getrights();
+
 // Get parameters
 $o			= GETPOST('o','int');
 if(empty($o)) $o = 0;
@@ -48,6 +56,36 @@ if ($user->societe_id > 0)
  *
  * Put here all code to do according to value of "action" parameter
  ********************************************************************/
+
+// Start of transaction
+$db->begin();
+$htaccessprotectip = new Htaccessprotectip($db);
+
+if (GETPOST('action')) {
+    switch(GETPOST('action')) {
+        case 'create':
+            $htaccessprotectip->name = GETPOST('name');
+            $htaccessprotectip->ip = GETPOST('ip');
+            $htaccessprotectip->trusted = (GETPOST('trusted') == 'on');
+            $id = $htaccessprotectip->create($user);
+            $db->commit();
+            //$return = dol_json_encode($htaccessprotectip);
+            break;
+        case 'delete':
+            $deleteIp = $htaccessprotectip->fetch(GETPOST('id'));
+            var_dump(GETPOST('id'));
+            var_dump($htaccessprotectip);
+            var_dump($deleteIp); die;
+            $result = $deleteIp->delete($user);
+            //$return = dol_json_encode($result);
+            break;
+    }
+}
+
+if ($o == 1) {
+    $ipList = $htaccessprotectip->fetchAll();
+}
+//$db->close();
 
 
 
@@ -160,7 +198,9 @@ if($o==0){
 
 // Tab EditConf
 if($o==1){
-    print '<form action="">';
+    $ipList = $htaccessprotectip->fetchAll();
+    print '<form id="ip_create" action="" method="POST">';
+    print '<input style="display: none;" name="action" value="create"/>';
     print '<table class="noborder" width="100%">';
     print '  <tr class="liste_titre">';
     print '    <td>'.$langs->trans("name").'</td>';
@@ -171,25 +211,15 @@ if($o==1){
     print '  </tr>';
     $var = true;
 
-
-    // TODO faire vraie requette
-    $i = 0;
-
-    while($i < 10){
-
-        $i++;
-        $ip = rand(0,255) . ".".rand(0,255) . ".".rand(0,255) . ".".rand(0,255);
-        $whitelite = rand(0,1);
+    foreach($ipList as $ip) {
+        $list = ($ip->trusted)?img_picto("ok", "tick").$langs->trans("whitelist"):img_picto("ko", "delete").$langs->trans("blacklist");
 
         print '  <tr '.$bc[$var].'>';
-        print '    <td width="60%">Un nom</td>';
-        print '    <td>'.$ip.'</td>';
-        if($whitelite) // TODO modifier ondition
-            print '    <td>'.img_picto("ok", "tick").$langs->trans("whitelist"). '</td>';
-        else
-            print '    <td>'.img_picto("ko", "delete").$langs->trans("blacklist"). '</td>';
+        print '    <td width="60%">' . $ip->name . '</td>';
+        print '    <td>' . $ip->ip . '</td>';
+        print '    <td>' . $list . '</td>';
         print '    <td>';
-        print '      <a href="" class="ip_delete">'.img_picto($langs->trans("delete"), "delete").'</a>';
+        print '      <a href="?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("delete"), "delete").'</a>';
         print '    </td>';
         print '  </tr>';
         $var=!$var;
@@ -197,16 +227,16 @@ if($o==1){
 
     print '  <tr '.$bc[$var].'>';
     print '    <td width="60%">';
-    print '      <input class="form-control" id="name" placeholder="' . $langs->trans("name") . '"/>';
+    print '      <input class="flat" id="name" name="name" placeholder="' . $langs->trans("name") . '"/>';
     print '    </td>';
     print '    <td>';
-    print '      <input class="form-control" id="ip" placeholder="' . $langs->trans("IP") . '"/>';
+    print '      <input class="flat" id="ip" name="ip" placeholder="' . $langs->trans("IP") . '"/>';
     print '    </td>';
     print '    <td>';
-    print '      <input type="checkbox" class="form-control" id="whitelist" checked="checked"/>';
+    print '      <input type="checkbox" class="flat" name="trusted" checked="checked"/>';
     print '    </td>';
     print '    <td>';
-    print '      <a href="" id="ip_create">'.img_picto($langs->trans("add"), "edit_add").'</a>';
+    print '      <input type="submit" class="flat" value="' . $langs->trans("add") . '"/>';
     print '    </td>';
     print '  </tr>';
 
@@ -224,7 +254,7 @@ if($o==1){
 
     print ' <script type="text/javascript" language="javascript">
             jQuery(document).ready(function() {
-                jQuery("#ip_create").click(function(e) {
+                jQuery("#ip_create").submit(function(e) {
                     e.preventDefault();
                     e.stopPropagation();
                     if(jQuery("#name").val() == "" || jQuery("#ip").val() == "") {
@@ -248,18 +278,11 @@ if($o==1){
                             }
                         });
                     } else {
-                        jQuery.ajax({
-                            type: "POST",
-                            url: "/htaccessProtect/admin/htaccessProtect_api.php",
-                            data: {action: "create", name: jQuery("#name").val(), ip: jQuery("#ip").val(), trusted: (jQuery("#whitelist").prop("checked"))?1:0}
-                        }).done(function(data) {
-                            console.log(data);
-                            //TODO: ajouter la ligne du nouvel élément dans le tableau
-                        });
+                        $(this).unbind("submit").submit();
                     }
                 });
 
-                jQuery(".ip_delete").click(function() {
+                /*jQuery(".ip_delete").click(function() {
                     jQuery.ajax({
                         type: "POST",
                         url: "/htaccessProtect/admin/htaccessProtect_api.php",
@@ -269,7 +292,7 @@ if($o==1){
                     });
 
                     return false;
-                });
+                });*/
             });
             </script>';
 }
