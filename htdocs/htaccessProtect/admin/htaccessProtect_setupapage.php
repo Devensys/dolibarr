@@ -72,11 +72,9 @@ if (GETPOST('action')) {
             //$return = dol_json_encode($htaccessprotectip);
             break;
         case 'delete':
-            $deleteIp = $htaccessprotectip->fetch(GETPOST('id'));
-            var_dump(GETPOST('id'));
-            var_dump($htaccessprotectip);
-            var_dump($deleteIp); die;
-            $result = $deleteIp->delete($user);
+            $htaccessprotectip->fetch(GETPOST('id'));
+            $result = $htaccessprotectip->delete($user);
+            $db->commit();
             //$return = dol_json_encode($result);
             break;
     }
@@ -166,40 +164,12 @@ if($o==0){
     }
     print '  </tr>';
     print '</table>';
-
-    print '<table class="noborder" width="100%">';
-    print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("Ipfiltreinfo").'</td>';
-    print '    <td align="right" width="160">&nbsp;</td>';
-    print '  </tr>';
-    $var = true;
-
-
-    // TODO faire vraie requette
-    $i = 0;
-
-    while($i < 10){
-
-        $i++;
-        $ip = rand(0,255) . ".".rand(0,255) . ".".rand(0,255) . ".".rand(0,255);
-        $whitelite = rand(0,1);
-
-        print '  <tr '.$bc[$var].'>';
-        print '    <td width="60%">'.$ip.'</td>';
-        if($whitelite) // TODO modifier ondition
-            print '    <td>'.img_picto("ok", "tick").$langs->trans("whitelist"). '</td>';
-        else
-            print '    <td>'.img_picto("ko", "delete").$langs->trans("blacklist"). '</td>';
-        print '  </tr>';
-        $var=!$var;
-    }
-    print '</table>';
 }
 
 // Tab EditConf
 if($o==1){
     $ipList = $htaccessprotectip->fetchAll();
-    print '<form id="ip_create" action="" method="POST">';
+    print '<form id="ip_create" action="htaccessProtect_setupapage.php?o=1" method="POST">';
     print '<input style="display: none;" name="action" value="create"/>';
     print '<table class="noborder" width="100%">';
     print '  <tr class="liste_titre">';
@@ -219,7 +189,7 @@ if($o==1){
         print '    <td>' . $ip->ip . '</td>';
         print '    <td>' . $list . '</td>';
         print '    <td>';
-        print '      <a href="?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("delete"), "delete").'</a>';
+        print '      <a href="htaccessProtect_setupapage.php?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("delete"), "delete").'</a>';
         print '    </td>';
         print '  </tr>';
         $var=!$var;

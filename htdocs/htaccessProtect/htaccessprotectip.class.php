@@ -154,7 +154,6 @@ class Htaccessprotectip extends CommonObject
     {
     	global $langs;
         $sql = "SELECT";
-		$sql.= " t.rowid,";
 		
 		$sql.= " t.id,";
 		$sql.= " t.name,";
@@ -164,7 +163,7 @@ class Htaccessprotectip extends CommonObject
 		
         $sql.= " FROM ".MAIN_DB_PREFIX.$this->table_element." as t";
         if ($ref) $sql.= " WHERE t.ref = '".$ref."'";
-        else $sql.= " WHERE t.rowid = ".$id;
+        else $sql.= " WHERE t.id = ".$id;
 
     	dol_syslog(get_class($this)."::fetch");
         $resql=$this->db->query($sql);
@@ -174,7 +173,7 @@ class Htaccessprotectip extends CommonObject
             {
                 $obj = $this->db->fetch_object($resql);
 
-                $this->id    = $obj->rowid;
+                $this->id    = $obj->id;
                 
 				$this->name = $obj->name;
 				$this->ip = $obj->ip;
@@ -225,7 +224,7 @@ class Htaccessprotectip extends CommonObject
 		$sql.= " trusted=".(isset($this->trusted)?$this->trusted:"null")."";
 
         
-        $sql.= " WHERE rowid=".$this->id;
+        $sql.= " WHERE id=".$this->id;
 
 		$this->db->begin();
 
@@ -297,7 +296,7 @@ class Htaccessprotectip extends CommonObject
 		if (! $error)
 		{
     		$sql = "DELETE FROM ".MAIN_DB_PREFIX.$this->table_element;
-    		$sql.= " WHERE rowid=".$this->id;
+    		$sql.= " WHERE id=".$this->id;
 
     		dol_syslog(__METHOD__);
     		$resql = $this->db->query($sql);
