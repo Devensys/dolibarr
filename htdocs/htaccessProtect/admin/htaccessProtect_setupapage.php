@@ -2,12 +2,11 @@
 
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
-require_once("../../filefunc.inc.php");
-require_once("../htaccessprotectip.class.php");
 
 
 /* Copyright (C) 2007-2010 Laurent Destailleur  <eldy@users.sourceforge.net>
-/* Copyright (C) 2014-2015  Teddy Andreotti <125155@supinfo.com>
+ * Copyright (C) 2014-2015  Teddy Andreotti <125155@supinfo.com>
+ * Copyright (C) 2014-2015  Virgile Cabane <129596@supinfo.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +21,10 @@ require_once("../htaccessprotectip.class.php");
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
+require_once("../../filefunc.inc.php");
+require_once("../htaccessprotectip.class.php");
+require_once("../htaccessprotectaccount.class.php");
 
 $res=0;
 if (! $res && file_exists("../../main.inc.php")) $res=@include '../../main.inc.php';			// to work if your module directory is into a subdir of root htdocs directory
@@ -60,6 +63,7 @@ if ($user->societe_id > 0)
 // Start of transaction
 $db->begin();
 $htaccessprotectip = new Htaccessprotectip($db);
+$htaccessprotectaccount = new Htaccessprotectaccount($db);
 
 if (GETPOST('action')) {
     switch(GETPOST('action')) {
@@ -69,20 +73,15 @@ if (GETPOST('action')) {
             $htaccessprotectip->trusted = (GETPOST('trusted') == 'on');
             $id = $htaccessprotectip->create($user);
             $db->commit();
-            //$return = dol_json_encode($htaccessprotectip);
             break;
         case 'delete':
             $htaccessprotectip->fetch(GETPOST('id'));
             $result = $htaccessprotectip->delete($user);
             $db->commit();
-            //$return = dol_json_encode($result);
             break;
     }
 }
 
-if ($o == 1) {
-    $ipList = $htaccessprotectip->fetchAll();
-}
 //$db->close();
 
 
@@ -120,6 +119,7 @@ if($o==0){
     print '<table class="noborder" width="100%">';
     print '  <tr class="liste_titre">';
     print '    <td>'.$langs->trans("generalinfo").'</td>';
+    print '    <td width="50" ></td>';
     print '    <td align="right" width="160">&nbsp;</td>';
     print '  </tr>';
     $var = true;
@@ -131,10 +131,18 @@ if($o==0){
         //TODO changer le text et faire le filtrage des droit correctement ...
     }
 
-
     print '  <tr '.$bc[$var].'>';
     print '    <td width="60%">'.$langs->trans("DirRight").'</td>';
+    print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
     print '    <td>' . $right . '</td>';
+    print '  </tr>';
+
+    $var=!$var;
+    print '  <tr '.$bc[$var].'>';
+    print '    <td width="60%">'.$langs->trans("DirRight").'</td>';
+    $verapache = apache_get_version();
+    print '    <td align="right">' . img_picto("e", strpos($verapache, '2.4') !== false ? "tick" : "delete" ) . '</td>';
+    print '    <td>' . apache_get_version() . '</td>';
     print '  </tr>';
 
     $var=!$var;
@@ -142,11 +150,14 @@ if($o==0){
     print '    <td width="60%">'.$langs->trans("FileExisteHtaccess").'</td>';
     if(file_exists(DOL_DOCUMENT_ROOT."/.htaccess")){
         if(true != false){
+            print '    <td align="right">' . img_picto("e", "tick" ) . '</td>';
             print '    <td>' . $langs->trans("fileok") . '</td>';
         }else{
+            print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
             print '    <td>' . $langs->trans("fileko") . '</td>';
         }
     }else{
+        print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
         print '    <td>' . $langs->trans("filemissing") . '</td>';
     }
     print '  </tr>';
@@ -156,11 +167,14 @@ if($o==0){
     print '    <td width="60%">'.$langs->trans("FileExisteHtpasswd").'</td>';
     if(file_exists(DOL_DOCUMENT_ROOT."/.htpasswd")){
         if(true != false){
+            print '    <td align="right">' . img_picto("e", "tick" ) . '</td>';
             print '    <td>' . $langs->trans("fileok") . '</td>';
         }else{
+            print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
             print '    <td>' . $langs->trans("fileko") . '</td>';
         }
     }else{
+        print '    <td align="right">' . img_picto($langs->trans("filemissing"), "delete" ) . '</td>';
         print '    <td>' . $langs->trans("filemissing") . '</td>';
     }
     print '  </tr>';
@@ -170,48 +184,107 @@ if($o==0){
 // Tab EditConf
 if($o==1){
     $ipList = $htaccessprotectip->fetchAll();
+    $accountList = $htaccessprotectaccount->fetchAll();
+
+    // IP Table
     print '<form id="ip_create" action="htaccessProtect_setupapage.php?o=1" method="POST">';
-    print '<input style="display: none;" name="action" value="create"/>';
-    print '<table class="noborder" width="100%">';
-    print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("name").'</td>';
-    print '    <td>'.$langs->trans("IP").'</td>';
-    print '    <td>'.$langs->trans("whitelist").'</td>';
-    print '    <td>&nbsp;</td>';
-    //print '    <td>'.img_picto("ok", "tick").'</td>';
-    print '  </tr>';
+    print '  <input style="display: none;" name="action" value="create"/>';
+    print '  <table class="noborder" width="100%">';
+    print '    <tr class="liste_titre">';
+    print '      <td>'.$langs->trans("name").'</td>';
+    print '      <td>'.$langs->trans("IP").'</td>';
+    print '      <td>'.$langs->trans("whitelist").'</td>';
+    print '      <td>&nbsp;</td>';
+    print '    </tr>';
     $var = true;
 
-    foreach($ipList as $ip) {
-        $list = ($ip->trusted)?img_picto("ok", "tick").$langs->trans("whitelist"):img_picto("ko", "delete").$langs->trans("blacklist");
+    if (sizeof($ipList)) {
+        foreach($ipList as $ip) {
+            $list = ($ip->trusted)?img_picto("ok", "tick").$langs->trans("whitelist"):img_picto("ko", "delete").$langs->trans("blacklist");
 
-        print '  <tr '.$bc[$var].'>';
-        print '    <td width="60%">' . $ip->name . '</td>';
-        print '    <td>' . $ip->ip . '</td>';
-        print '    <td>' . $list . '</td>';
-        print '    <td>';
-        print '      <a href="htaccessProtect_setupapage.php?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("delete"), "delete").'</a>';
-        print '    </td>';
-        print '  </tr>';
+            print '    <tr '.$bc[$var].'>';
+            print '      <td width="60%">' . $ip->name . '</td>';
+            print '      <td>' . $ip->ip . '</td>';
+            print '      <td>' . $list . '</td>';
+            print '      <td>';
+            print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("delete"), "delete").'</a>';
+            print '      </td>';
+            print '    </tr>';
+            $var=!$var;
+        }
+    } else {
+        print '    <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
+        print '      <td width="60%">' . $langs->trans("noip") . '</td>';
+        print '      <td>&nbsp;</td>';
+        print '      <td>&nbsp;</td>';
+        print '      <td>&nbsp;</td>';
+        print '    </tr>';
         $var=!$var;
     }
 
-    print '  <tr '.$bc[$var].'>';
-    print '    <td width="60%">';
-    print '      <input class="flat" id="name" name="name" placeholder="' . $langs->trans("name") . '"/>';
-    print '    </td>';
-    print '    <td>';
-    print '      <input class="flat" id="ip" name="ip" placeholder="' . $langs->trans("IP") . '"/>';
-    print '    </td>';
-    print '    <td>';
-    print '      <input type="checkbox" class="flat" name="trusted" checked="checked"/>';
-    print '    </td>';
-    print '    <td>';
-    print '      <input type="submit" class="flat" value="' . $langs->trans("add") . '"/>';
-    print '    </td>';
-    print '  </tr>';
+    print '    <tr '.$bc[$var].'>';
+    print '      <td width="60%">';
+    print '        <input class="flat" id="name" name="name" placeholder="' . $langs->trans("name") . '"/>';
+    print '      </td>';
+    print '      <td>';
+    print '        <input class="flat" id="ip" name="ip" placeholder="' . $langs->trans("IP") . '"/>';
+    print '      </td>';
+    print '      <td>';
+    print '        <input type="checkbox" class="flat" name="trusted" checked="checked"/>';
+    print '      </td>';
+    print '      <td>';
+    print '        <input type="submit" class="flat" value="' . $langs->trans("add") . '"/>';
+    print '      </td>';
+    print '    </tr>';
 
-    print '</table>';
+    print '  </table>';
+    print '</form>';
+
+
+    // Account Table
+    print '<form id="account_create" action="htaccessProtect_setupapage.php?o=1" method="POST">';
+    print '  <input style="display: none;" name="action" value="create"/>';
+    print '  <table class="noborder" width="100%">';
+    print '    <tr class="liste_titre">';
+    print '      <td>'.$langs->trans("pseudo").'</td>';
+    print '      <td>'.$langs->trans("password").'</td>';
+    print '      <td>&nbsp;</td>';
+    print '    </tr>';
+    $var = true;
+
+    if (sizeof($accountList)) {
+        foreach($accountList as $account) {
+            print '    <tr '.$bc[$var].'>';
+            print '      <td width="60%">' . $account->pseudo . '</td>';
+            print '      <td>' . $account->passwd . '</td>';
+            print '      <td>';
+            print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&entity=account&id=' . $account->id . '">'.img_picto($langs->trans("delete"), "delete").'</a>';
+            print '      </td>';
+            print '    </tr>';
+            $var=!$var;
+        }
+    } else {
+        print '    <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
+        print '      <td width="60%">' . $langs->trans("noaccount") . '</td>';
+        print '      <td>&nbsp;</td>';
+        print '      <td>&nbsp;</td>';
+        print '    </tr>';
+        $var=!$var;
+    }
+
+    print '    <tr '.$bc[$var].'>';
+    print '      <td width="60%">';
+    print '        <input class="flat" name="pseudo" placeholder="' . $langs->trans("pseudo") . '"/>';
+    print '      </td>';
+    print '      <td>';
+    print '        <input class="flat" name="passwd" placeholder="' . $langs->trans("password") . '"/>';
+    print '      </td>';
+    print '      <td>';
+    print '        <input type="submit" class="flat" value="' . $langs->trans("add") . '"/>';
+    print '      </td>';
+    print '    </tr>';
+
+    print '  </table>';
     print '</form>';
 
     print '<div id="dialog-confirm" title="Erreur" style="display: none;">';
@@ -252,18 +325,6 @@ if($o==1){
                         $(this).unbind("submit").submit();
                     }
                 });
-
-                /*jQuery(".ip_delete").click(function() {
-                    jQuery.ajax({
-                        type: "POST",
-                        url: "/htaccessProtect/admin/htaccessProtect_api.php",
-                        data: {action: "delete", id: jQuery(this).attr("data-id")}
-                    }).done(function(data) {
-                        console.log(data);
-                    });
-
-                    return false;
-                });*/
             });
             </script>';
 }
@@ -276,20 +337,7 @@ if($o==2){
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    // TODO recup vraie info
-    print 'Order deny,allow
-Allow from 82.127.50.242
-Deny from 109.190.14.152
-Deny from 109.190.151.33
-Deny from 109.190.36.128
-
-AuthType Basic
-AuthName "Restricted Area"
-AuthUserFile .htpasswd
-Require valid-user
-
-Deny from all
-Satisfy any';
+    print htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htaccess"));
 
     print '    </code></pre></td>';
     print '  </tr>';
@@ -298,8 +346,7 @@ Satisfy any';
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    // TODO recup vraie info
-    print 'test:$apr1$cn.tFYWL$tqaKkRGhdA2YmOW07Zfx4/';
+    print htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd"));
 
     print '    </code></pre></td>';
     print '  </tr>';

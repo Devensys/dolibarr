@@ -16,3 +16,7 @@ IP=Adresse IP
 delete=Supprimer
 add=Ajouter
 descmodule=Generation d'un simple fichier htaccess / htpasswd
+noip=Aucune IP renseignée
+noaccount=Aucun compte renseigné
+password=Mot de passe
+pseudo=Identifiant
