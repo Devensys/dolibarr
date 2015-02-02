@@ -120,6 +120,7 @@ if($o==0){
     print '<table class="noborder" width="100%">';
     print '  <tr class="liste_titre">';
     print '    <td>'.$langs->trans("generalinfo").'</td>';
+    print '    <td width="50" ></td>';
     print '    <td align="right" width="160">&nbsp;</td>';
     print '  </tr>';
     $var = true;
@@ -131,10 +132,18 @@ if($o==0){
         //TODO changer le text et faire le filtrage des droit correctement ...
     }
 
-
     print '  <tr '.$bc[$var].'>';
     print '    <td width="60%">'.$langs->trans("DirRight").'</td>';
+    print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
     print '    <td>' . $right . '</td>';
+    print '  </tr>';
+
+    $var=!$var;
+    print '  <tr '.$bc[$var].'>';
+    print '    <td width="60%">'.$langs->trans("DirRight").'</td>';
+    $verapache = apache_get_version();
+    print '    <td align="right">' . img_picto("e", strpos($verapache, '2.4') !== false ? "tick" : "delete" ) . '</td>';
+    print '    <td>' . apache_get_version() . '</td>';
     print '  </tr>';
 
     $var=!$var;
@@ -142,11 +151,14 @@ if($o==0){
     print '    <td width="60%">'.$langs->trans("FileExisteHtaccess").'</td>';
     if(file_exists(DOL_DOCUMENT_ROOT."/.htaccess")){
         if(true != false){
+            print '    <td align="right">' . img_picto("e", "tick" ) . '</td>';
             print '    <td>' . $langs->trans("fileok") . '</td>';
         }else{
+            print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
             print '    <td>' . $langs->trans("fileko") . '</td>';
         }
     }else{
+        print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
         print '    <td>' . $langs->trans("filemissing") . '</td>';
     }
     print '  </tr>';
@@ -156,11 +168,14 @@ if($o==0){
     print '    <td width="60%">'.$langs->trans("FileExisteHtpasswd").'</td>';
     if(file_exists(DOL_DOCUMENT_ROOT."/.htpasswd")){
         if(true != false){
+            print '    <td align="right">' . img_picto("e", "tick" ) . '</td>';
             print '    <td>' . $langs->trans("fileok") . '</td>';
         }else{
+            print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
             print '    <td>' . $langs->trans("fileko") . '</td>';
         }
     }else{
+        print '    <td align="right">' . img_picto($langs->trans("filemissing"), "delete" ) . '</td>';
         print '    <td>' . $langs->trans("filemissing") . '</td>';
     }
     print '  </tr>';
@@ -182,16 +197,26 @@ if($o==1){
     print '  </tr>';
     $var = true;
 
-    foreach($ipList as $ip) {
-        $list = ($ip->trusted)?img_picto("ok", "tick").$langs->trans("whitelist"):img_picto("ko", "delete").$langs->trans("blacklist");
+    if (sizeof($ipList)) {
+        foreach($ipList as $ip) {
+            $list = ($ip->trusted)?img_picto("ok", "tick").$langs->trans("whitelist"):img_picto("ko", "delete").$langs->trans("blacklist");
 
-        print '  <tr '.$bc[$var].'>';
-        print '    <td width="60%">' . $ip->name . '</td>';
-        print '    <td>' . $ip->ip . '</td>';
-        print '    <td>' . $list . '</td>';
-        print '    <td>';
-        print '      <a href="htaccessProtect_setupapage.php?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("delete"), "delete").'</a>';
-        print '    </td>';
+            print '  <tr '.$bc[$var].'>';
+            print '    <td width="60%">' . $ip->name . '</td>';
+            print '    <td>' . $ip->ip . '</td>';
+            print '    <td>' . $list . '</td>';
+            print '    <td>';
+            print '      <a href="htaccessProtect_setupapage.php?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("delete"), "delete").'</a>';
+            print '    </td>';
+            print '  </tr>';
+            $var=!$var;
+        }
+    } else {
+        print '  <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
+        print '    <td width="60%">' . $langs->trans("nodata") . '</td>';
+        print '    <td>&nbsp;</td>';
+        print '    <td>&nbsp;</td>';
+        print '    <td>&nbsp;</td>';
         print '  </tr>';
         $var=!$var;
     }
@@ -276,20 +301,7 @@ if($o==2){
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    // TODO recup vraie info
-    print 'Order deny,allow
-Allow from 82.127.50.242
-Deny from 109.190.14.152
-Deny from 109.190.151.33
-Deny from 109.190.36.128
-
-AuthType Basic
-AuthName "Restricted Area"
-AuthUserFile .htpasswd
-Require valid-user
-
-Deny from all
-Satisfy any';
+    print htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htaccess"));
 
     print '    </code></pre></td>';
     print '  </tr>';
@@ -298,8 +310,7 @@ Satisfy any';
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    // TODO recup vraie info
-    print 'test:$apr1$cn.tFYWL$tqaKkRGhdA2YmOW07Zfx4/';
+    print htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd"));
 
     print '    </code></pre></td>';
     print '  </tr>';
