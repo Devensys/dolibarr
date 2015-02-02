@@ -168,8 +168,9 @@ class Htaccessprotectaccount extends CommonObject
             {
                 $obj = $this->db->fetch_object($resql);
 
-                $this->id    = $obj->rowid;
-                
+                $this->id    = $obj->id;
+                $this->id    = $obj->id;
+
 				$this->pseudo = $obj->pseudo;
 				$this->passwd = $obj->passwd;
 
@@ -398,9 +399,8 @@ class Htaccessprotectaccount extends CommonObject
 		global $langs;
 		$sql = "SELECT";
 		$sql.= " t.id,";
-		$sql.= " t.name,";
-		$sql.= " t.ip,";
-		$sql.= " t.trusted";
+		$sql.= " t.pseudo,";
+		$sql.= " t.passwd";
 
 
 		$sql.= " FROM ".MAIN_DB_PREFIX.$this->table_element." as t";

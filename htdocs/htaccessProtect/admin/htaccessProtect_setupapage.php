@@ -66,19 +66,35 @@ $htaccessprotectip = new Htaccessprotectip($db);
 $htaccessprotectaccount = new Htaccessprotectaccount($db);
 
 if (GETPOST('action')) {
-    switch(GETPOST('action')) {
-        case 'create':
-            $htaccessprotectip->name = GETPOST('name');
-            $htaccessprotectip->ip = GETPOST('ip');
-            $htaccessprotectip->trusted = (GETPOST('trusted') == 'on');
-            $id = $htaccessprotectip->create($user);
-            $db->commit();
-            break;
-        case 'delete':
-            $htaccessprotectip->fetch(GETPOST('id'));
-            $result = $htaccessprotectip->delete($user);
-            $db->commit();
-            break;
+    if (GETPOST('entity')) {
+        switch(GETPOST('action')) {
+            case 'create':
+                $htaccessprotectaccount->pseudo = GETPOST('pseudo');
+                $htaccessprotectaccount->passwd = crypt(GETPOST('passwd'));
+                $id = $htaccessprotectaccount->create($user);
+                $db->commit();
+                break;
+            case 'delete':
+                $htaccessprotectaccount->fetch(GETPOST('id'));
+                $result = $htaccessprotectaccount->delete($user);
+                $db->commit();
+                break;
+        }
+    } else {
+        switch(GETPOST('action')) {
+            case 'create':
+                $htaccessprotectip->name = GETPOST('name');
+                $htaccessprotectip->ip = GETPOST('ip');
+                $htaccessprotectip->trusted = (GETPOST('trusted') == 'on');
+                $id = $htaccessprotectip->create($user);
+                $db->commit();
+                break;
+            case 'delete':
+                $htaccessprotectip->fetch(GETPOST('id'));
+                $result = $htaccessprotectip->delete($user);
+                $db->commit();
+                break;
+        }
     }
 }
 
@@ -242,8 +258,9 @@ if($o==1){
 
 
     // Account Table
-    print '<form id="account_create" action="htaccessProtect_setupapage.php?o=1" method="POST">';
+    print '<form action="htaccessProtect_setupapage.php?o=1" method="POST">';
     print '  <input style="display: none;" name="action" value="create"/>';
+    print '  <input style="display: none;" name="entity" value="account"/>';
     print '  <table class="noborder" width="100%">';
     print '    <tr class="liste_titre">';
     print '      <td>'.$langs->trans("pseudo").'</td>';
