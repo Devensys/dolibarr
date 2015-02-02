@@ -35,18 +35,17 @@ class modhtaccessProtect extends DolibarrModules{
     function __construct($db) {
         global $langs, $conf;
 
-        $this->db = $db;
+        $langs->load("htaccessProtect@htaccessProtect");
 
+        $this->db = $db;
 
         $this->numero = 260026;
         $this->rights_class = 'htaccessProtect';
         $this->family = "Devensys Secure Suite ";
-        //$this->name = preg_replace('/^mod/i', '', get_class($this));
         $this->name = "Protection Htaccess/Htpasswd";
-        //$this->description = "htaccessProtect generate a simple htaccess file for your Dolibarr";
         $this->description = $langs->trans("descmodule");
         $this->version = '1.0.1';
-        $this->const_name = 'MAIN_MODULE_' . strtoupper($this->name);
+        $this->const_name = 'MAIN_MODULE_'.strtoupper(preg_replace('/^mod/i','',get_class($this)));
         $this->special = 2;
         $this->picto = 'lock@htaccessProtect';
 
@@ -76,7 +75,7 @@ class modhtaccessProtect extends DolibarrModules{
         $this->requiredby = array(); // List of modules id to disable if this one is disabled
         $this->conflictwith = array(); // List of modules id this module is in conflict with
         $this->phpmin = array(5, 0);     // Minimum version of PHP required by module
-        $this->need_dolibarr_version = array(1, 0); // Minimum version of Dolibarr required by module
+        $this->need_dolibarr_version = array(3, 6); // Minimum version of Dolibarr required by module
         $this->langfiles = array("mylangfile@htaccessProtect");
 
 
