@@ -440,4 +440,122 @@ class Htaccessprotectip extends CommonObject
 		}
 	}
 
+	/**
+	 *  Load all objects in memory from the database
+	 *
+	 *  @return array
+	 */
+	function fetchAllWhite()
+	{
+		global $langs;
+		$sql = "SELECT";
+		$sql.= " t.id,";
+		$sql.= " t.name,";
+		$sql.= " t.ip,";
+		$sql.= " t.trusted";
+
+		$sql.= " FROM ".MAIN_DB_PREFIX.$this->table_element." as t";
+		$sql.= " WHERE t.trusted = 1";
+
+		dol_syslog(get_class($this)."::fetchAll");
+		$resql=$this->db->query($sql);
+
+		if ($resql)
+		{
+			$num = $this->db->num_rows($resql);
+			$i = 0;
+			if ($num)
+			{
+				$return = array();
+				while ($i < $num)
+				{
+					$obj = $this->db->fetch_object($resql);
+					if ($obj)
+					{
+						$return[] = $obj;
+					}
+					$i++;
+				}
+
+				$this->db->free($resql);
+				return $return;
+			}
+		}
+	}
+
+	/**
+	 *  Load all objects in memory from the database
+	 *
+	 *  @return array
+	 */
+	function fetchAllBlack()
+	{
+		global $langs;
+		$sql = "SELECT";
+		$sql.= " t.id,";
+		$sql.= " t.name,";
+		$sql.= " t.ip,";
+		$sql.= " t.trusted";
+
+		$sql.= " FROM ".MAIN_DB_PREFIX.$this->table_element." as t";
+		$sql.= " WHERE t.trusted = 0";
+
+		dol_syslog(get_class($this)."::fetchAll");
+		$resql=$this->db->query($sql);
+
+		if ($resql)
+		{
+			$num = $this->db->num_rows($resql);
+			$i = 0;
+			if ($num)
+			{
+				$return = array();
+				while ($i < $num)
+				{
+					$obj = $this->db->fetch_object($resql);
+					if ($obj)
+					{
+						$return[] = $obj;
+					}
+					$i++;
+				}
+
+				$this->db->free($resql);
+				return $return;
+			}
+		}
+	}
+
+	/**
+	 *  Generate string for content htaccess
+	 *
+	 *  @return string
+	 */
+	function GenerateString(){
+		$file = "";
+
+		$ipblack  = $this->fetchAllBlack();
+		if(count($ipblack)){
+			$file .= "Order Allow,Deny \n";
+			$file .= "Allow from all \n";
+
+			foreach($ipblack as $ipb) {
+				$file .= "Deny from " . $ipb->ip . "\n";
+			}
+		}
+
+		$ipwhite = $this->fetchAllWhite();
+		$file .= "<IfModule mod_rewrite.c> \n";
+		$file .= "RewriteEngine On \n";
+		//	<If "%{REMOTE_ADDR} != '82.127.50.242'">
+			$file .= "		AuthType Basic \n";
+			$file .= "		AuthName \"restricted area\" \n";
+			$file .= "		AuthUserFile /var/www/develop/htdocs/.htpasswd \n";
+			$file .= "		require valid-user \n";
+		//	</If>
+			$file .= "</IfModule> \n";
+
+		$file .= "Satisfy all";
+		return $file;
+	}
 }
