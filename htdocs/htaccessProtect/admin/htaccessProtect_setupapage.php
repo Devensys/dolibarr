@@ -104,15 +104,16 @@ jQuery(document).ready(function() {
 </script>';
 */
 
-//print_fiche_titre($langs->trans("Htaccess Protect"));
 print_fiche_titre("Htaccess Protect");
 
 dol_fiche_head(array(array("?o=0", $langs->trans("ConfActive"), "ActiveConf"),
                      array("?o=1", $langs->trans("EditConf"), "ModConf"),
                      array("?o=2", $langs->trans("HtaccessContent"), "AffFiles")), $o);
 
+$fe_htaccess = file_exists(DOL_DOCUMENT_ROOT."/.htaccess");
+$ipList = $htaccessprotectip->fetchAll();
+$accountList = $htaccessprotectaccount->fetchAll();
 
-//print info_admin($langs->trans("Display Info "));
 
 // Tab confActive
 if($o==0){
@@ -148,7 +149,7 @@ if($o==0){
     $var=!$var;
     print '  <tr '.$bc[$var].'>';
     print '    <td width="60%">'.$langs->trans("FileExisteHtaccess").'</td>';
-    if(file_exists(DOL_DOCUMENT_ROOT."/.htaccess")){
+    if($fe_htaccess){
         if(true != false){
             print '    <td align="right">' . img_picto("e", "tick" ) . '</td>';
             print '    <td>' . $langs->trans("fileok") . '</td>';
@@ -165,7 +166,7 @@ if($o==0){
     $var=!$var;
     print '  <tr '.$bc[$var].'>';
     print '    <td width="60%">'.$langs->trans("FileExisteHtpasswd").'</td>';
-    if(file_exists(DOL_DOCUMENT_ROOT."/.htpasswd")){
+    if($fe_htpasswd){
         if(true != false){
             print '    <td align="right">' . img_picto("e", "tick" ) . '</td>';
             print '    <td>' . $langs->trans("fileok") . '</td>';
@@ -183,9 +184,6 @@ if($o==0){
 
 // Tab EditConf
 if($o==1){
-    $ipList = $htaccessprotectip->fetchAll();
-    $accountList = $htaccessprotectaccount->fetchAll();
-
     // IP Table
     print '<form id="ip_create" action="htaccessProtect_setupapage.php?o=1" method="POST">';
     print '  <input style="display: none;" name="action" value="create"/>';
@@ -295,7 +293,6 @@ if($o==1){
     print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>L\'adresse IP renseignée est mal formée</p>';
     print '</div>';
 
-
     print ' <script type="text/javascript" language="javascript">
             jQuery(document).ready(function() {
                 jQuery("#ip_create").submit(function(e) {
@@ -331,14 +328,14 @@ if($o==1){
 
 // Tab HtaccessContent
 if($o==2){
+    // tableau aff conf generer
     print '<table class="noborder" width="100%">';
     print '  <tr class="liste_titre">';
     print '    <td>'.$langs->trans("ContenuHtaccess").'</td>';
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    print htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htaccess"));
-
+    print $htaccessprotectip->GenerateString();
     print '    </code></pre></td>';
     print '  </tr>';
     print '  <tr class="liste_titre">';
@@ -346,11 +343,33 @@ if($o==2){
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    print htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd"));
+
 
     print '    </code></pre></td>';
     print '  </tr>';
     print '</table>';
+
+
+    // tableau aff actuel
+    print '<table class="noborder" width="100%">';
+    print '  <tr class="liste_titre">';
+    print '    <td>'.$langs->trans("ContenuHtaccess").'</td>';
+    print '  </tr>';
+    print '  <tr>';
+    print '    <td><pre style="padding: 5px"><code>';
+    print $fe_htaccess ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT . "/.htaccess")) : $langs->trans("filemissing") ;
+    print '    </code></pre></td>';
+    print '  </tr>';
+    print '  <tr class="liste_titre">';
+    print '    <td>'.$langs->trans("ContenuHtpassword").'</td>';
+    print '  </tr>';
+    print '  <tr>';
+    print '    <td><pre style="padding: 5px"><code>';
+    print $fe_htpasswde ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd")) : $langs->trans('filemissing');
+    print '    </code></pre></td>';
+    print '  </tr>';
+    print '</table>';
+
 
 }
 dol_fiche_end();
