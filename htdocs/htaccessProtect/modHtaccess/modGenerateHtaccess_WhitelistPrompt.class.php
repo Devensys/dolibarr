@@ -32,7 +32,7 @@ class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
         $file .= "	RewriteEngine On \n";
         $file .= "	AuthType Basic \n";
         $file .= "	AuthName \"restricted area\" \n";
-        $file .= "	AuthUserFile /var/www/develop/htdocs/.htpasswd \n";
+        $file .= "	AuthUserFile ".DOL_DOCUMENT_ROOT."/.htpasswd \n";
         $file .= "	require valid-user \n";
         $file .= "</IfModule> \n";
         $file .= "\n";
