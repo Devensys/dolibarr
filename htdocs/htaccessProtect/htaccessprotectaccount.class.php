@@ -431,4 +431,26 @@ class Htaccessprotectaccount extends CommonObject
 		}
 	}
 
+	/**
+	 *  Generate htpasswd file content
+	 *
+	 *  @return string
+	 */
+	function GenerateFileContent(){
+		$i = 0;
+		$file = "";
+		$accounts = $this->fetchAll();
+
+		if(count($accounts)){
+			foreach($accounts as $account) {
+				$i++;
+				$file .= $account->pseudo . ":" . $account->passwd;
+				if ($i < sizeof($accounts)) {
+					$file .= "\n";
+				}
+			}
+		}
+
+		return $file;
+	}
 }
