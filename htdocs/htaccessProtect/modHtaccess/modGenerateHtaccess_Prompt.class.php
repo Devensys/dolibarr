@@ -8,8 +8,7 @@ class modGenerateHtaccess_Prompt extends modGenerateHtaccess
     {
         parent::__construct($bddips, $accountList, $langs);
         $this->name = preg_split("/_/", get_class($this))[1];
-        $this->desc = "Permet de Blacklist des ips, Whitelist des ips, et fournie un prompt pour les autres.";
-        //$this->desc = $this->langs->trans("FileExisteHtaccess");
+        $this->desc = $this->langs->trans("PromptDesc");
         //TODO traduire toute le module.
     }
 

@@ -1,26 +1,38 @@
-ConfActive=Configuration Active
-EditConf=Editer la Configuration
-HtaccessContent=Contenu htaccess/htpasswd
-DirRight=Droit du dossier racine
-FileExisteHtaccess=Info fichier htaccess
-FileExisteHtpasswd=Info fichier htpasword
-filemissing=Fichier absent du serveur
-fileok=Fichier correct
-fileko=Fichier modifier
-generalinfo=Informations générales
-Ipfiltreinfo=Liste Ip
-whitelist=Autorisée
-blacklist=Bloquée
-name=Nom
-IP=Adresse IP
-delete=Supprimer
-add=Ajouter
-descmodule=Generation d'un simple fichier htaccess / htpasswd
-noip=Aucune IP renseignée
-noaccount=Aucun compte renseigné
-password=Mot de passe
-pseudo=Identifiant
-actions=Actions
-title=Protection Htaccess et Htpasswd
-configuration=Configuration
-fileContent=Contenu des fichiers
+############################################## HTACCESS / HTPASSWD ##############################################
+title = Protection Htaccess et Htpasswd
+descmodule = Gestion des connexions via les fichiers .htaccess et .htpasswd
+
+################################# Onglets de la page de configuration du module #################################
+generalinfo = Informations générales
+configuration = Configuration
+fileContent = Contenu des fichiers
+
+############################################# Informations générales ############################################
+DirRight = Droit du dossier racine
+ServerVersion = Version du serveur
+FileExisteHtaccess = Informations du fichier Htaccess
+FileExisteHtpasswd = Informations du fichier Htpasword
+filemissing = Fichier absent du serveur
+fileok = Fichier correct
+fileko = Fichier présent mais différent de la configuration du module
+
+########################################## Tableau de comptes htpasswd ##########################################
+name = Nom
+IP = Adresse IP
+whitelist = Autorisée
+delete = Supprimer
+
+noip = Aucune IP renseignée
+actions = Action
+add = Ajouter
+
+########################################## Tableau de comptes htpasswd ##########################################
+noaccount = Aucun compte renseigné
+password = Mot de passe
+pseudo = Identifiant
+
+
+################## Description des modèles de configuration de la sécurité htaccess / htpasswd ##################
+AllowWhiteBlackPromptDesc = Blacklisting d'IP, Whitelisting d'IP et Authentification par Prompt pour les autres
+PromptDesc = Authentification par Prompt pour tous
+WhitelistPromptDesc = Whitelisting d'IP et Authentification par Prompt pour les autres

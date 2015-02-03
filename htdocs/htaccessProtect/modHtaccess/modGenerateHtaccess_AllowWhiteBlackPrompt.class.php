@@ -2,14 +2,13 @@
 
 require_once DOL_DOCUMENT_ROOT .'/htaccessProtect/modHtaccess/module_htaccessgenerator.php';
 
-class modGenerateHtaccess_WhitelistPromt extends modGenerateHtaccess
+class modGenerateHtaccess_AllowWhiteBlackPrompt extends modGenerateHtaccess
 {
     function __construct($bddips, $accountList, $langs)
     {
         parent::__construct($bddips, $accountList, $langs);
         $this->name = preg_split("/_/", get_class($this))[1];
-        $this->desc = "Permet de Whitelist des ips, et fournie un prompt pour les autres.";
-        //$this->desc = $this->langs->trans("FileExisteHtaccess");
+        $this->desc = $this->langs->trans("AllowWhiteBlackPromptDesc");
         //TODO traduire toute le module.
     }
 
@@ -20,20 +19,27 @@ class modGenerateHtaccess_WhitelistPromt extends modGenerateHtaccess
      */
     function GenerateFileContent(){
         $file = "";
-        $file .= "Order Deny,Allow \n";
-        $file .= "Deny from all \n\n";
+        $file .= "Order Allow,Deny \n";
+        $file .= "Allow from all \n\n";
         foreach( $this->$ipblack as $ipb) {
-            $file .= "Allow from " . $ipb->ip . "\n";
+            $file .= "Deny from " . $ipb->ip . "\n";
         }
         $file .= "\n";
         $file .= "<IfModule mod_rewrite.c> \n";
         $file .= "	RewriteEngine On \n";
-        $file .= "  AuthType Basic \n";
-        $file .= "	AuthName \"restricted area\" \n";
-        $file .= "	AuthUserFile /var/www/develop/htdocs/.htpasswd \n";
-        $file .= "	require valid-user \n";
+        $file .= "	<If \"";
+        foreach( $this->$ipwhite as $ipw){
+            $file .= "%{REMOTE_ADDR} != '".$ipw->ip."' && ";
+        }
+        $file = substr($file, 0 , -4);
+        $file .= "\"> \n";
+        $file .= "		AuthType Basic \n";
+        $file .= "		AuthName \"restricted area\" \n";
+        $file .= "		AuthUserFile /var/www/develop/htdocs/.htpasswd \n";
+        $file .= "		require valid-user \n";
+        $file .= "	</If> \n";
         $file .= "</IfModule> \n";
-        $file .= "Satisfy any";
+        $file .= "Satisfy all";
         return $file;
     }
 
@@ -47,15 +53,15 @@ class modGenerateHtaccess_WhitelistPromt extends modGenerateHtaccess
     function Info(){
         $return = Array();
 
-        if(count($this->ipwhite) && !count($this->ipblack) && count($this->accountList)){
+        if(count($this->ipwhite) && count($this->ipblack) && count($this->accountList)){
             $return[0] = 1;
             $return[1] = "";
             return $return;
         }
 
-        else if(count($this->ipblack)){
+        else if(count($this->ipwhite) && count($this->ipblack)){
             $return[0] = 3;
-            $return[1] = "Les ips blacklist ne seront pas pris en compte";
+            $return[1] = "Il faut au moins un comptes utilisateur";
             return $return;
         }
 
