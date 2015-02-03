@@ -1,35 +1,35 @@
 ############################################## HTACCESS / HTPASSWD ##############################################
-title = Protection Htaccess et Htpasswd
-descmodule = Gestion des connexions via les fichiers .htaccess et .htpasswd
+Title = Protection Htaccess et Htpasswd
+DescModule = Gestion des connexions via les fichiers .htaccess et .htpasswd
 
 ################################# Onglets de la page de configuration du module #################################
-generalinfo = Informations générales
-configuration = Configuration
-fileContent = Contenu des fichiers
+GeneralInfo = Informations générales
+Configuration = Configuration
+FileContent = Contenu des fichiers
 
 ############################################# Informations générales ############################################
-DirRight = Droit du dossier racine
+DirectoryRight = Droit du dossier racine
 ServerVersion = Version du serveur
-FileExisteHtaccess = Informations du fichier Htaccess
-FileExisteHtpasswd = Informations du fichier Htpasword
-filemissing = Fichier absent du serveur
-fileok = Fichier correct
-fileko = Fichier présent mais différent de la configuration du module
+HtaccessFileExist = Informations du fichier Htaccess
+HtpasswdFileExist = Informations du fichier Htpasword
+MissingFile = Fichier absent du serveur
+FileOk = Fichier correct
+FileKo = Fichier présent mais différent de la configuration du module
 
 ########################################## Tableau de comptes htpasswd ##########################################
-name = Nom
-IP = Adresse IP
-whitelist = Autorisée
-delete = Supprimer
-
-noip = Aucune IP renseignée
-actions = Action
-add = Ajouter
+Name = Nom
+Ip = Adresse IP
+Whitelist = Autorisée
+Blacklist = Bloquée
+Delete = Supprimer
+NoIp = Aucune IP renseignée
+Action = Action
+Add = Ajouter
 
 ########################################## Tableau de comptes htpasswd ##########################################
-noaccount = Aucun compte renseigné
-password = Mot de passe
-pseudo = Identifiant
+NoAccount = Aucun compte renseigné
+Password = Mot de passe
+Pseudo = Identifiant
 
 
 ################## Description des modèles de configuration de la sécurité htaccess / htpasswd ##################

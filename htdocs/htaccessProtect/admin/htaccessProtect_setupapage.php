@@ -117,7 +117,7 @@ $accountList = $htaccessprotectaccount->fetchAll();
  * Put here all code to build page
  ****************************************************/
 
-llxHeader('',$langs->trans('title'),'');
+llxHeader('',$langs->trans('Title'),'');
 
 //Adding jquery code
 /*
@@ -128,18 +128,18 @@ jQuery(document).ready(function() {
 </script>';
 */
 
-print_fiche_titre($langs->trans('title'));
+print_fiche_titre($langs->trans('Title'));
 
-dol_fiche_head(array(array("?o=0", $langs->trans("generalinfo"), "ActiveConf"),
-                     array("?o=1", $langs->trans("configuration"), "ModConf"),
-                     array("?o=2", $langs->trans("fileContent"), "AffFiles")), $o);
+dol_fiche_head(array(array("?o=0", $langs->trans("GeneralInfo"), "ActiveConf"),
+                     array("?o=1", $langs->trans("Configuration"), "ModConf"),
+                     array("?o=2", $langs->trans("FileContent"), "AffFiles")), $o);
 
 
 // Tab confActive
 if($o==0){
     print '<table class="noborder" width="100%">';
     print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("generalinfo").'</td>';
+    print '    <td>'.$langs->trans("GeneralInfo").'</td>';
     print '    <td width="50" ></td>';
     print '    <td align="right" width="160">&nbsp;</td>';
     print '  </tr>';
@@ -148,19 +148,19 @@ if($o==0){
     $right = substr(sprintf('%o',fileperms(DOL_DOCUMENT_ROOT)), -3);
 
     if($right < 755){
-        print info_admin($langs->trans("Display Info "));
+        print info_admin($langs->trans("DisplayInfo"));
         //TODO changer le text et faire le filtrage des droit correctement ...
     }
 
     print '  <tr '.$bc[$var].'>';
-    print '    <td width="60%">'.$langs->trans("DirRight").'</td>';
-    print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
+    print '    <td width="60%">'.$langs->trans("DirectoryRight").'</td>';
+    print '    <td align="right">' . img_picto($langs->trans("Delete"), "delete" ) . '</td>';
     print '    <td>' . $right . '</td>';
     print '  </tr>';
 
     $var=!$var;
     print '  <tr '.$bc[$var].'>';
-    print '    <td width="60%">'.$langs->trans("DirRight").'</td>';
+    print '    <td width="60%">'.$langs->trans("DirectoryRight").'</td>';
     $verapache = apache_get_version();
     print '    <td align="right">' . img_picto("e", strpos($verapache, '2.4') !== false ? "tick" : "delete" ) . '</td>';
     print '    <td>' . apache_get_version() . '</td>';
@@ -168,35 +168,35 @@ if($o==0){
 
     $var=!$var;
     print '  <tr '.$bc[$var].'>';
-    print '    <td width="60%">'.$langs->trans("FileExisteHtaccess").'</td>';
+    print '    <td width="60%">'.$langs->trans("HtaccessFileExist").'</td>';
     if($fe_htaccess){
         if(true != false){
-            print '    <td align="right">' . img_picto("e", "tick" ) . '</td>';
-            print '    <td>' . $langs->trans("fileok") . '</td>';
+            print '    <td align="right">' . img_picto($langs->trans("Ok"), "tick" ) . '</td>';
+            print '    <td>' . $langs->trans("FileOk") . '</td>';
         }else{
-            print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
-            print '    <td>' . $langs->trans("fileko") . '</td>';
+            print '    <td align="right">' . img_picto($langs->trans("Ko"), "delete" ) . '</td>';
+            print '    <td>' . $langs->trans("FileKo") . '</td>';
         }
     }else{
-        print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
-        print '    <td>' . $langs->trans("filemissing") . '</td>';
+        print '    <td align="right">' . img_picto($langs->trans("Ko"), "delete" ) . '</td>';
+        print '    <td>' . $langs->trans("MissingFile") . '</td>';
     }
     print '  </tr>';
 
     $var=!$var;
     print '  <tr '.$bc[$var].'>';
-    print '    <td width="60%">'.$langs->trans("FileExisteHtpasswd").'</td>';
+    print '    <td width="60%">'.$langs->trans("HtpasswdFileExist").'</td>';
     if($fe_htpasswd){
         if(true != false){
-            print '    <td align="right">' . img_picto("e", "tick" ) . '</td>';
+            print '    <td align="right">' . img_picto($langs->trans("Ok"), "tick" ) . '</td>';
             print '    <td>' . $langs->trans("fileok") . '</td>';
         }else{
-            print '    <td align="right">' . img_picto("e", "delete" ) . '</td>';
+            print '    <td align="right">' . img_picto($langs->trans("Ko"), "delete" ) . '</td>';
             print '    <td>' . $langs->trans("fileko") . '</td>';
         }
     }else{
-        print '    <td align="right">' . img_picto($langs->trans("filemissing"), "delete" ) . '</td>';
-        print '    <td>' . $langs->trans("filemissing") . '</td>';
+        print '    <td align="right">' . img_picto($langs->trans("MissingFile"), "delete" ) . '</td>';
+        print '    <td>' . $langs->trans("MissingFile") . '</td>';
     }
     print '  </tr>';
     print '</table>';
@@ -230,10 +230,10 @@ if($o==1){
 
     print '  <table class="noborder" width="100%">';
     print '    <tr class="liste_titre">';
-    print '      <td>'.$langs->trans("name").'</td>';
-    print '      <td>'.$langs->trans("desc").'</td>';
+    print '      <td>'.$langs->trans("Name").'</td>';
+    print '      <td>'.$langs->trans("Description").'</td>';
     print '      <td>'.$langs->trans("Etat").'</td>';
-    print '      <td style="text-align: center;">'.$langs->trans("select").'</td>';
+    print '      <td style="text-align: center;">'.$langs->trans("Action").'</td>';
     print '    </tr>';
     $var = true;
 
@@ -245,7 +245,7 @@ if($o==1){
         if($conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE == $module->name){
             print '      <td style="text-align: center;">'.img_picto('', "tick").'</td>';
         }else{
-            print '      <td style="text-align: center; font-weight: bold;"><a href="htaccessProtect_setupapage.php?o=1&action=change&name='.$module->name.'">'.$langs->trans("Activer").'</a></td>';
+            print '      <td style="text-align: center; font-weight: bold;"><a href="htaccessProtect_setupapage.php?o=1&action=change&name='.$module->name.'">'.$langs->trans("Activate").'</a></td>';
         }
         print '    </tr>';
         $var = !$var;
@@ -258,10 +258,10 @@ if($o==1){
     print '  <input style="display: none;" name="action" value="create"/>';
     print '  <table class="noborder" width="100%">';
     print '    <tr class="liste_titre">';
-    print '      <td>'.$langs->trans("name").'</td>';
-    print '      <td>'.$langs->trans("IP").'</td>';
-    print '      <td style="text-align: center;">'.$langs->trans("whitelist").'</td>';
-    print '      <td style="text-align: center;">'.$langs->trans("actions").'</td>';
+    print '      <td>'.$langs->trans("Name").'</td>';
+    print '      <td>'.$langs->trans("Ip").'</td>';
+    print '      <td style="text-align: center;">'.$langs->trans("Whitelist").'</td>';
+    print '      <td style="text-align: center;">'.$langs->trans("Action").'</td>';
     print '    </tr>';
     $var = true;
 
@@ -270,32 +270,32 @@ if($o==1){
             print '    <tr '.$bc[$var].'>';
             print '      <td width="60%">' . $ip->name . '</td>';
             print '      <td>' . $ip->ip . '</td>';
-            print '      <td style="text-align: center;">' . (($ip->trusted)?img_picto($langs->trans("whitelist"), "tick"):img_picto($langs->trans("blacklist"), "delete")) . '</td>';
+            print '      <td style="text-align: center;">' . (($ip->trusted)?img_picto($langs->trans("Whitelist"), "tick"):img_picto($langs->trans("Blacklist"), "delete")) . '</td>';
             print '      <td style="text-align: center;">';
-            print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("delete"), "delete").'</a>';
+            print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("Delete"), "delete").'</a>';
             print '      </td>';
             print '    </tr>';
             $var=!$var;
         }
     } else {
         print '    <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
-        print '      <td colspan="4" style="text-align: center;">' . $langs->trans("noip") . '</td>';
+        print '      <td colspan="4" style="text-align: center;">' . $langs->trans("NoIp") . '</td>';
         print '    </tr>';
         $var=!$var;
     }
 
     print '    <tr '.$bc[$var].'>';
     print '      <td width="60%">';
-    print '        <input class="flat" id="name" name="name" placeholder="' . $langs->trans("name") . '"/>';
+    print '        <input class="flat" id="name" name="name" placeholder="' . $langs->trans("Name") . '"/>';
     print '      </td>';
     print '      <td>';
-    print '        <input class="flat" id="ip" name="ip" placeholder="' . $langs->trans("IP") . '"/>';
+    print '        <input class="flat" id="ip" name="ip" placeholder="' . $langs->trans("Ip") . '"/>';
     print '      </td>';
     print '      <td style="text-align: center;">';
     print '        <input type="checkbox" class="flat" name="trusted" checked="checked"/>';
     print '      </td>';
     print '      <td style="text-align: center;">';
-    print '        <input type="submit" class="flat" value="' . $langs->trans("add") . '" style="box-shadow:none;"/>';
+    print '        <input type="submit" class="flat" value="' . $langs->trans("Add") . '" style="box-shadow:none;"/>';
     print '      </td>';
     print '    </tr>';
 
@@ -309,9 +309,9 @@ if($o==1){
     print '  <input style="display: none;" name="entity" value="account"/>';
     print '  <table class="noborder" width="100%">';
     print '    <tr class="liste_titre">';
-    print '      <td>'.$langs->trans("pseudo").'</td>';
-    print '      <td>'.$langs->trans("password").'</td>';
-    print '      <td style="text-align: center;">'.$langs->trans("actions").'</td>';
+    print '      <td>'.$langs->trans("Pseudo").'</td>';
+    print '      <td>'.$langs->trans("Password").'</td>';
+    print '      <td style="text-align: center;">'.$langs->trans("Action").'</td>';
     print '    </tr>';
     $var = true;
 
@@ -321,14 +321,14 @@ if($o==1){
             print '      <td width="60%">' . $account->pseudo . '</td>';
             print '      <td>' . $account->passwd . '</td>';
             print '      <td style="text-align: center;">';
-            print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&entity=account&id=' . $account->id . '">'.img_picto($langs->trans("delete"), "delete").'</a>';
+            print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&entity=account&id=' . $account->id . '">'.img_picto($langs->trans("Delete"), "delete").'</a>';
             print '      </td>';
             print '    </tr>';
             $var=!$var;
         }
     } else {
         print '    <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
-        print '      <td colspan="4" style="text-align: center;">' . $langs->trans("noaccount") . '</td>';
+        print '      <td colspan="4" style="text-align: center;">' . $langs->trans("NoAccount") . '</td>';
         print '    </tr>';
         $var=!$var;
     }
