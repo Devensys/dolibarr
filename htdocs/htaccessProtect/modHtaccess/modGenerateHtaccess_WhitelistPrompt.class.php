@@ -21,7 +21,7 @@ class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
         $file = "";
         $file .= "Order Deny,Allow \n";
         $file .= "Deny from all \n\n";
-        foreach( $this->$ipblack as $ipb) {
+        foreach( $this->ipwhite as $ipb) {
             $file .= "Allow from " . $ipb->ip . "\n";
         }
         $file .= "\n";
