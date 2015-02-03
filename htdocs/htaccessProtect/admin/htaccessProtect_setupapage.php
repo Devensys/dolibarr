@@ -93,7 +93,7 @@ if (GETPOST('action')) {
                 $result = $htaccessprotectip->delete($user);
                 break;
             case 'change':
-                dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", GETPOST("name"));
+                while(!dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", GETPOST("name"))); // RAGE MODE
                 break;
         }
     }

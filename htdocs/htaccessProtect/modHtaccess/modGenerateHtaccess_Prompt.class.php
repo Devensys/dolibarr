@@ -25,7 +25,7 @@ class modGenerateHtaccess_Prompt extends modGenerateHtaccess
         $file .= "	AuthName \"restricted area\" \n";
         $file .= "	AuthUserFile /var/www/develop/htdocs/.htpasswd \n";
         $file .= "	require valid-user \n";
-        $file .= "</IfModule> \n";
+        $file .= "</IfModule>";
         return $file;
     }
 
