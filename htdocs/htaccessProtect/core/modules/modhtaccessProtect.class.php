@@ -131,7 +131,12 @@ class modhtaccessProtect extends DolibarrModules{
      *      @return     int             	1 if OK, 0 if KO
      */
     function init($options = '') {
+        global $conf;
         $sql = array();
+
+        if (! empty($conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE)) {
+
+        }
 
         $result = $this->_load_tables('/htaccessProtect/sql/');
         return $this->_init($sql, $options);

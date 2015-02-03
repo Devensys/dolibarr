@@ -526,37 +526,5 @@ class Htaccessprotectip extends CommonObject
 		}
 	}
 
-	/**
-	 *  Generate htaccess file content
-	 *
-	 *  @return string
-	 */
-	function GenerateFileContent(){
-		$file = "";
-		$ipblack  = $this->fetchAllBlack();
-		$ipwhite = $this->fetchAllWhite();
 
-		if(count($ipblack)){
-			$file .= "Order Allow,Deny \n";
-			$file .= "Allow from all \n\n";
-
-			foreach($ipblack as $ipb) {
-				$file .= "Deny from " . $ipb->ip . "\n";
-			}
-			$file .= "\n";
-		}
-
-		$file .= htmlspecialchars("<IfModule mod_rewrite.c> \n");
-		$file .= "	RewriteEngine On \n";
-		$file .= htmlspecialchars("	<If \"%{REMOTE_ADDR} != '82.127.50.242'\"> \n");
-		$file .= "		AuthType Basic \n";
-		$file .= "		AuthName \"restricted area\" \n";
-		$file .= "		AuthUserFile /var/www/develop/htdocs/.htpasswd \n";
-		$file .= "		require valid-user \n";
-		$file .= htmlspecialchars("	</If> \n");
-		$file .= htmlspecialchars("</IfModule> \n\n");
-
-		$file .= "Satisfy all";
-		return $file;
-	}
 }

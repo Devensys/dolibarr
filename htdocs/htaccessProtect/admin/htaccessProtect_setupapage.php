@@ -65,6 +65,8 @@ $db->begin();
 $htaccessprotectip = new Htaccessprotectip($db);
 $htaccessprotectaccount = new Htaccessprotectaccount($db);
 $fe_htaccess = file_exists(DOL_DOCUMENT_ROOT."/.htaccess");
+$fe_htpasswd = file_exists(DOL_DOCUMENT_ROOT."/.htpasswd");
+
 if (GETPOST('action')) {
     if (GETPOST('entity')) {
         switch(GETPOST('action')) {
@@ -124,10 +126,6 @@ jQuery(document).ready(function() {
 */
 
 print_fiche_titre($langs->trans('title'));
-
-/*dol_fiche_head(array(array("?o=0", $langs->trans("ConfActive"), "ActiveConf"),
-                     array("?o=1", $langs->trans("EditConf"), "ModConf"),
-                     array("?o=2", $langs->trans("HtaccessContent"), "AffFiles")), $o);*/
 
 dol_fiche_head(array(array("?o=0", $langs->trans("generalinfo"), "ActiveConf"),
                      array("?o=1", $langs->trans("configuration"), "ModConf"),
@@ -203,6 +201,52 @@ if($o==0){
 
 // Tab EditConf
 if($o==1){
+    // Select Algo for generation
+    //TODO faire trad for this block
+
+    // Charge tableau des modules generation
+    $dir = DOL_DOCUMENT_ROOT . "/htaccessProtect/modHtaccess/";
+    clearstatcache();
+    $handle=opendir($dir);
+    $i=1;
+    if (is_resource($handle))
+    {
+        while (($file = readdir($handle))!==false)
+        {
+            if (preg_match('/(modGenerateHtaccess_[a-z]+)\.class\.php/i',$file,$reg))
+            {
+                // Chargement de la classe
+                $classname = $reg[1];
+                require_once $dir.'/'.$file;
+                $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
+                $arrayhandler[$obj->name]=$obj;
+                $i++;
+            }
+        }
+        closedir($handle);
+    }
+
+    print '  <table class="noborder" width="100%">';
+    print '    <tr class="liste_titre">';
+    print '      <td>'.$langs->trans("name").'</td>';
+    print '      <td>'.$langs->trans("desc").'</td>';
+    print '      <td>'.$langs->trans("Etat").'</td>';
+    print '      <td style="text-align: center;">'.$langs->trans("select").'</td>';
+    print '    </tr>';
+    $var = true;
+
+    foreach($arrayhandler as $module){
+        print '    <tr '.$bc[$var].'>';
+        print '      <td>'.$module->name.'</td>';
+        print '      <td>'.$module->desc.'</td>';
+        print '      <td>'.$module->getEtat().'</td>';
+        print '      <td style="text-align: center;">'.$langs->trans("select").'</td>';
+        print '    </tr>';
+        $var = !$var;
+    }
+
+    print '  </table>';
+
     // IP Table
     print '<form id="ip_create" action="htaccessProtect_setupapage.php?o=1" method="POST">';
     print '  <input style="display: none;" name="action" value="create"/>';
@@ -348,7 +392,7 @@ if($o==2){
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    print        $htaccessprotectip->GenerateFileContent();
+    print        htmlentities($htaccessprotectip->GenerateFileContent());
     print '    </code></pre></td>';
     print '  </tr>';
     print '  <tr class="liste_titre">';
