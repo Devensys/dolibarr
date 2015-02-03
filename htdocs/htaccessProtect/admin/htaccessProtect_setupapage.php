@@ -71,37 +71,29 @@ if (GETPOST('action')) {
     if (GETPOST('entity')) {
         switch(GETPOST('action')) {
             case 'create':
-                $db->begin();
                 $htaccessprotectaccount->pseudo = GETPOST('pseudo');
                 $htaccessprotectaccount->passwd = crypt(GETPOST('passwd'));
                 $id = $htaccessprotectaccount->create($user);
-                $db->commit();
                 break;
             case 'delete':
-                $db->begin();
                 $htaccessprotectaccount->fetch(GETPOST('id'));
                 $result = $htaccessprotectaccount->delete($user);
-                $db->commit();
                 break;
         }
     } else {
         switch(GETPOST('action')) {
             case 'create':
-                $db->begin();
                 $htaccessprotectip->name = GETPOST('name');
                 $htaccessprotectip->ip = GETPOST('ip');
                 $htaccessprotectip->trusted = (GETPOST('trusted') == 'on');
                 $id = $htaccessprotectip->create($user);
-                $db->commit();
                 break;
             case 'delete':
-                $db->begin();
                 $htaccessprotectip->fetch(GETPOST('id'));
                 $result = $htaccessprotectip->delete($user);
-                $db->commit();
                 break;
             case 'change':
-                var_dump(dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", GETPOST("name")));
+                dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", GETPOST("name"));
                 break;
         }
     }
