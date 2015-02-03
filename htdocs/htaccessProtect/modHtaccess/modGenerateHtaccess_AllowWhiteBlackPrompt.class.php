@@ -20,16 +20,21 @@ class modGenerateHtaccess_AllowWhiteBlackPrompt extends modGenerateHtaccess
     function GenerateFileContent(){
         $file = "";
         $file .= "Order Allow,Deny \n";
-        $file .= "Allow from all \n\n";
-        foreach( $this->$ipblack as $ipb) {
-            $file .= "Deny from " . $ipb->ip . "\n";
+        $file .= "Allow from all \n";
+        if(count($this->ipblack)) {
+            $file .= "\n";
+            foreach ($this->ipblack as $ipb) {
+                $file .= "Deny from " . $ipb->ip . "\n";
+            }
         }
         $file .= "\n";
         $file .= "<IfModule mod_rewrite.c> \n";
         $file .= "	RewriteEngine On \n";
         $file .= "	<If \"";
-        foreach( $this->$ipwhite as $ipw){
-            $file .= "%{REMOTE_ADDR} != '".$ipw->ip."' && ";
+        if(count($this->ipwhite)) {
+            foreach ($this->ipwhite as $ipw) {
+                $file .= "%{REMOTE_ADDR} != '" . $ipw->ip . "' && ";
+            }
         }
         $file = substr($file, 0 , -4);
         $file .= "\"> \n";
@@ -39,6 +44,7 @@ class modGenerateHtaccess_AllowWhiteBlackPrompt extends modGenerateHtaccess
         $file .= "		require valid-user \n";
         $file .= "	</If> \n";
         $file .= "</IfModule> \n";
+        $file .= "\n";
         $file .= "Satisfy all";
         return $file;
     }
