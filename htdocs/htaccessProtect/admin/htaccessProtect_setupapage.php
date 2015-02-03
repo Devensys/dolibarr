@@ -64,7 +64,7 @@ if ($user->societe_id > 0)
 $db->begin();
 $htaccessprotectip = new Htaccessprotectip($db);
 $htaccessprotectaccount = new Htaccessprotectaccount($db);
-
+$fe_htaccess = file_exists(DOL_DOCUMENT_ROOT."/.htaccess");
 if (GETPOST('action')) {
     if (GETPOST('entity')) {
         switch(GETPOST('action')) {
@@ -98,6 +98,9 @@ if (GETPOST('action')) {
     }
 }
 
+$ipList = $htaccessprotectip->fetchAll();
+$accountList = $htaccessprotectaccount->fetchAll();
+
 //$db->close();
 
 
@@ -109,7 +112,7 @@ if (GETPOST('action')) {
  * Put here all code to build page
  ****************************************************/
 
-llxHeader('','Htaccess Protect','');
+llxHeader('',$langs->trans('title'),'');
 
 //Adding jquery code
 /*
@@ -120,15 +123,15 @@ jQuery(document).ready(function() {
 </script>';
 */
 
-print_fiche_titre("Htaccess Protect");
+print_fiche_titre($langs->trans('title'));
 
-dol_fiche_head(array(array("?o=0", $langs->trans("ConfActive"), "ActiveConf"),
+/*dol_fiche_head(array(array("?o=0", $langs->trans("ConfActive"), "ActiveConf"),
                      array("?o=1", $langs->trans("EditConf"), "ModConf"),
-                     array("?o=2", $langs->trans("HtaccessContent"), "AffFiles")), $o);
+                     array("?o=2", $langs->trans("HtaccessContent"), "AffFiles")), $o);*/
 
-$fe_htaccess = file_exists(DOL_DOCUMENT_ROOT."/.htaccess");
-$ipList = $htaccessprotectip->fetchAll();
-$accountList = $htaccessprotectaccount->fetchAll();
+dol_fiche_head(array(array("?o=0", $langs->trans("generalinfo"), "ActiveConf"),
+                     array("?o=1", $langs->trans("configuration"), "ModConf"),
+                     array("?o=2", $langs->trans("fileContent"), "AffFiles")), $o);
 
 
 // Tab confActive
@@ -207,20 +210,18 @@ if($o==1){
     print '    <tr class="liste_titre">';
     print '      <td>'.$langs->trans("name").'</td>';
     print '      <td>'.$langs->trans("IP").'</td>';
-    print '      <td>'.$langs->trans("whitelist").'</td>';
-    print '      <td>&nbsp;</td>';
+    print '      <td style="text-align: center;">'.$langs->trans("whitelist").'</td>';
+    print '      <td style="text-align: center;">'.$langs->trans("actions").'</td>';
     print '    </tr>';
     $var = true;
 
-    if (sizeof($ipList)) {
+    if(count($ipList)){
         foreach($ipList as $ip) {
-            $list = ($ip->trusted)?img_picto("ok", "tick").$langs->trans("whitelist"):img_picto("ko", "delete").$langs->trans("blacklist");
-
             print '    <tr '.$bc[$var].'>';
             print '      <td width="60%">' . $ip->name . '</td>';
             print '      <td>' . $ip->ip . '</td>';
-            print '      <td>' . $list . '</td>';
-            print '      <td>';
+            print '      <td style="text-align: center;">' . (($ip->trusted)?img_picto($langs->trans("whitelist"), "tick"):img_picto($langs->trans("blacklist"), "delete")) . '</td>';
+            print '      <td style="text-align: center;">';
             print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("delete"), "delete").'</a>';
             print '      </td>';
             print '    </tr>';
@@ -228,10 +229,7 @@ if($o==1){
         }
     } else {
         print '    <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
-        print '      <td width="60%">' . $langs->trans("noip") . '</td>';
-        print '      <td>&nbsp;</td>';
-        print '      <td>&nbsp;</td>';
-        print '      <td>&nbsp;</td>';
+        print '      <td colspan="4" style="text-align: center;">' . $langs->trans("noip") . '</td>';
         print '    </tr>';
         $var=!$var;
     }
@@ -243,11 +241,11 @@ if($o==1){
     print '      <td>';
     print '        <input class="flat" id="ip" name="ip" placeholder="' . $langs->trans("IP") . '"/>';
     print '      </td>';
-    print '      <td>';
+    print '      <td style="text-align: center;">';
     print '        <input type="checkbox" class="flat" name="trusted" checked="checked"/>';
     print '      </td>';
-    print '      <td>';
-    print '        <input type="submit" class="flat" value="' . $langs->trans("add") . '"/>';
+    print '      <td style="text-align: center;">';
+    print '        <input type="submit" class="flat" value="' . $langs->trans("add") . '" style="box-shadow:none;"/>';
     print '      </td>';
     print '    </tr>';
 
@@ -263,7 +261,7 @@ if($o==1){
     print '    <tr class="liste_titre">';
     print '      <td>'.$langs->trans("pseudo").'</td>';
     print '      <td>'.$langs->trans("password").'</td>';
-    print '      <td>&nbsp;</td>';
+    print '      <td style="text-align: center;">'.$langs->trans("actions").'</td>';
     print '    </tr>';
     $var = true;
 
@@ -272,7 +270,7 @@ if($o==1){
             print '    <tr '.$bc[$var].'>';
             print '      <td width="60%">' . $account->pseudo . '</td>';
             print '      <td>' . $account->passwd . '</td>';
-            print '      <td>';
+            print '      <td style="text-align: center;">';
             print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&entity=account&id=' . $account->id . '">'.img_picto($langs->trans("delete"), "delete").'</a>';
             print '      </td>';
             print '    </tr>';
@@ -280,9 +278,7 @@ if($o==1){
         }
     } else {
         print '    <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
-        print '      <td width="60%">' . $langs->trans("noaccount") . '</td>';
-        print '      <td>&nbsp;</td>';
-        print '      <td>&nbsp;</td>';
+        print '      <td colspan="4" style="text-align: center;">' . $langs->trans("noaccount") . '</td>';
         print '    </tr>';
         $var=!$var;
     }
@@ -294,7 +290,7 @@ if($o==1){
     print '      <td>';
     print '        <input class="flat" name="passwd" placeholder="' . $langs->trans("password") . '"/>';
     print '      </td>';
-    print '      <td>';
+    print '      <td style="text-align: center;">';
     print '        <input type="submit" class="flat" value="' . $langs->trans("add") . '"/>';
     print '      </td>';
     print '    </tr>';
@@ -348,20 +344,19 @@ if($o==2){
     // tableau aff conf generer
     print '<table class="noborder" width="100%">';
     print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("ContenuHtaccess").'</td>';
+    print '    <td>Htaccess</td>';
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    print $htaccessprotectip->GenerateString();
+    print        $htaccessprotectip->GenerateFileContent();
     print '    </code></pre></td>';
     print '  </tr>';
     print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("ContenuHtpassword").'</td>';
+    print '    <td>Htpassword</td>';
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-
-
+    print        $htaccessprotectaccount->GenerateFileContent();
     print '    </code></pre></td>';
     print '  </tr>';
     print '</table>';
