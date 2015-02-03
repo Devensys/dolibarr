@@ -61,7 +61,7 @@ $dir = DOL_DOCUMENT_ROOT . "/htaccessProtect/modHtaccess/";
  ********************************************************************/
 
 // Start of transaction
-$db->begin();
+
 $htaccessprotectip = new Htaccessprotectip($db);
 $htaccessprotectaccount = new Htaccessprotectaccount($db);
 $fe_htaccess = file_exists(DOL_DOCUMENT_ROOT."/.htaccess");
@@ -71,12 +71,14 @@ if (GETPOST('action')) {
     if (GETPOST('entity')) {
         switch(GETPOST('action')) {
             case 'create':
+                $db->begin();
                 $htaccessprotectaccount->pseudo = GETPOST('pseudo');
                 $htaccessprotectaccount->passwd = crypt(GETPOST('passwd'));
                 $id = $htaccessprotectaccount->create($user);
                 $db->commit();
                 break;
             case 'delete':
+                $db->begin();
                 $htaccessprotectaccount->fetch(GETPOST('id'));
                 $result = $htaccessprotectaccount->delete($user);
                 $db->commit();
@@ -85,6 +87,7 @@ if (GETPOST('action')) {
     } else {
         switch(GETPOST('action')) {
             case 'create':
+                $db->begin();
                 $htaccessprotectip->name = GETPOST('name');
                 $htaccessprotectip->ip = GETPOST('ip');
                 $htaccessprotectip->trusted = (GETPOST('trusted') == 'on');
@@ -92,6 +95,7 @@ if (GETPOST('action')) {
                 $db->commit();
                 break;
             case 'delete':
+                $db->begin();
                 $htaccessprotectip->fetch(GETPOST('id'));
                 $result = $htaccessprotectip->delete($user);
                 $db->commit();
