@@ -185,10 +185,10 @@ if($o==0){
     if($fe_htpasswd){
         if(true != false){
             print '    <td align="right">' . img_picto($langs->trans("Ok"), "tick" ) . '</td>';
-            print '    <td>' . $langs->trans("fileok") . '</td>';
+            print '    <td>' . $langs->trans("FileOk") . '</td>';
         }else{
             print '    <td align="right">' . img_picto($langs->trans("Ko"), "delete" ) . '</td>';
-            print '    <td>' . $langs->trans("fileko") . '</td>';
+            print '    <td>' . $langs->trans("FileKo") . '</td>';
         }
     }else{
         print '    <td align="right">' . img_picto($langs->trans("MissingFile"), "delete" ) . '</td>';
@@ -331,13 +331,13 @@ if($o==1){
 
     print '    <tr '.$bc[$var].'>';
     print '      <td width="60%">';
-    print '        <input class="flat" name="pseudo" placeholder="' . $langs->trans("pseudo") . '"/>';
+    print '        <input class="flat" name="pseudo" placeholder="' . $langs->trans("Pseudo") . '"/>';
     print '      </td>';
     print '      <td>';
-    print '        <input class="flat" name="passwd" placeholder="' . $langs->trans("password") . '"/>';
+    print '        <input class="flat" name="passwd" placeholder="' . $langs->trans("Password") . '"/>';
     print '      </td>';
     print '      <td style="text-align: center;">';
-    print '        <input type="submit" class="flat" value="' . $langs->trans("add") . '"/>';
+    print '        <input type="submit" class="flat" value="' . $langs->trans("Add") . '"/>';
     print '      </td>';
     print '    </tr>';
 
@@ -420,7 +420,7 @@ if($o==2){
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    print $fe_htaccess ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT . "/.htaccess")) : $langs->trans("filemissing") ;
+    print $fe_htaccess ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT . "/.htaccess")) : $langs->trans("MissingFile") ;
     print '    </code></pre></td>';
     print '  </tr>';
     print '  <tr class="liste_titre">';
@@ -428,7 +428,7 @@ if($o==2){
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    print $fe_htpasswde ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd")) : $langs->trans('filemissing');
+    print $fe_htpasswde ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd")) : $langs->trans('MissingFile');
     print '    </code></pre></td>';
     print '  </tr>';
     print '</table>';
