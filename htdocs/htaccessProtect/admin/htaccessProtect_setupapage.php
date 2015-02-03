@@ -25,12 +25,12 @@ ini_set("display_errors", 1);
 require_once("../../filefunc.inc.php");
 require_once("../htaccessprotectip.class.php");
 require_once("../htaccessprotectaccount.class.php");
+require_once DOL_DOCUMENT_ROOT.'/core/lib/admin.lib.php';
 
 $res=0;
 if (! $res && file_exists("../../main.inc.php")) $res=@include '../../main.inc.php';			// to work if your module directory is into a subdir of root htdocs directory
 if (! $res) die("Include of main fails");
 dol_include_once('/module/class/skeleton_class.class.php');
-
 // Load traductions files requiredby by page
 $langs->load("htaccessProtect@htaccessProtect");
 
@@ -51,7 +51,7 @@ if ($user->societe_id > 0)
     //accessforbidden();
 }
 
-
+$dir = DOL_DOCUMENT_ROOT . "/htaccessProtect/modHtaccess/";
 
 
 /*******************************************************************
@@ -95,6 +95,9 @@ if (GETPOST('action')) {
                 $htaccessprotectip->fetch(GETPOST('id'));
                 $result = $htaccessprotectip->delete($user);
                 $db->commit();
+                break;
+            case 'change':
+                var_dump(dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", GETPOST("name")));
                 break;
         }
     }
@@ -205,7 +208,6 @@ if($o==1){
     //TODO faire trad for this block
 
     // Charge tableau des modules generation
-    $dir = DOL_DOCUMENT_ROOT . "/htaccessProtect/modHtaccess/";
     clearstatcache();
     $handle=opendir($dir);
     $i=1;
@@ -240,7 +242,11 @@ if($o==1){
         print '      <td>'.$module->name.'</td>';
         print '      <td>'.$module->desc.'</td>';
         print '      <td>'.$module->getEtat().'</td>';
-        print '      <td style="text-align: center;">'.$langs->trans("select").'</td>';
+        if($conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE == $module->name){
+            print '      <td style="text-align: center;">'.img_picto('', "tick").'</td>';
+        }else{
+            print '      <td style="text-align: center; font-weight: bold;"><a href="htaccessProtect_setupapage.php?o=1&action=change&name='.$module->name.'">'.$langs->trans("Activer").'</a></td>';
+        }
         print '    </tr>';
         $var = !$var;
     }
@@ -392,7 +398,12 @@ if($o==2){
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    print        htmlentities($htaccessprotectip->GenerateFileContent());
+
+    $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
+    require_once $dir.'/'.$classname.'.class.php';
+    $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
+    print        htmlentities($obj->GenerateFileContent());
+
     print '    </code></pre></td>';
     print '  </tr>';
     print '  <tr class="liste_titre">';
@@ -400,7 +411,7 @@ if($o==2){
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    print        $htaccessprotectaccount->GenerateFileContent();
+    print        htmlentities($htaccessprotectaccount->GenerateFileContent());
     print '    </code></pre></td>';
     print '  </tr>';
     print '</table>';
