@@ -135,7 +135,8 @@ class modhtaccessProtect extends DolibarrModules{
         $sql = array();
 
         if (empty($conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE)) {
-            $conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE = "Prompt";
+            //$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE = "Prompt";
+            dolibarr_set_const($this->db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", 'Prompt','chaine',0,'',$conf->entity);
         }
 
         $result = $this->_load_tables('/htaccessProtect/sql/');
