@@ -474,7 +474,8 @@ if($o==2){
             print '<a id="linksynchtaccess" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htaccess">'. img_picto("", "refresh") . $langs->trans("ReplaceFile") . '</a>';
         }
     } else {
-        print '<a id="linksynchtaccess" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htaccess">'. img_picto("", "refresh") . $langs->trans("GenerateFile") . '</a>';
+        $linksynchtaccess = ($htaccessprotectaccount->GenerateFileContent() != "" && $fe_htpasswd ) ? "linksynchtaccess" : "linksynchtaccessM";
+        print '<a id="'.$linksynchtaccess.'" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htaccess">'. img_picto("", "refresh") . $langs->trans("GenerateFile") . '</a>';
     }
     print '    </td>';
     print '  </tr>';
@@ -510,7 +511,11 @@ if($o==2){
     print '</a></p>';
 
     print '<div id="dialog-confirm2" title="Erreur" style="display: none;">';
-    print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Attention cela supprimer votre configuration actuel !!! </p>';
+    print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>'.$langs->trans('AlertReplace').'</p>';
+    print '</div>';
+
+    print '<div id="dialog-confirm3" title="Erreur" style="display: none;">';
+    print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>'.$langs->trans('AlertHtpasswdMissing').'</p>';
     print '</div>';
 
     print ' <script type="text/javascript" language="javascript">
@@ -523,16 +528,33 @@ if($o==2){
                     jQuery("#dialog-confirm2").dialog({
                         resizable: false,
                         modal: true,
+                        width : "450px",
                         buttons: {
-                            Annuler : function(){
+                            Non : function(){
                                 jQuery(this).dialog("close");
                             },
-                            Ok: function() {
+                            Oui: function() {
                                 jQuery( this ).dialog( "close" );
                                 document.location.href =  jQuery(that).attr("href");
                             }
                         }
                     });
+                });
+
+                jQuery("#linksynchtaccessM").click(function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    jQuery("#dialog-confirm3").dialog({
+                        resizable: false,
+                        modal: true,
+                        width : "600px",
+                        buttons: {
+                            OK : function(){
+                                jQuery(this).dialog("close");
+                            }
+                        }
+                    });
+
                 });
             });
             </script>';
