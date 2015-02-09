@@ -314,7 +314,9 @@ class Htaccessprotectaccount extends CommonObject
 		}
 	}
 
-
+	function getMD5(){
+		return md5($this->GenerateFileContent());
+	}
 
 	/**
 	 *	Load an object from its id and create a new one in database

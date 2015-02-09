@@ -128,24 +128,28 @@ switch ($o) {
 
         // Création du HTML pour le fichier .htaccess
         if($fe_htaccess){
-            if(true != false){
+            $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
+            require_once $dir.'/'.$classname.'.class.php';
+            $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
+
+            if($obj->getMD5() == md5_file(DOL_DOCUMENT_ROOT."/.htaccess")){
                 $htaccessHTML = img_picto($langs->trans("Ok"), "statut4") . $langs->trans("FileOk");
-            } elseif (true == false) {
-                $htaccessHTML = img_picto($langs->trans("ModificationNeeded"), "statut7") . $langs->trans("ModificationNeeded");
             } else {
-                $htaccessHTML = img_picto($langs->trans("Error"), "statut8") . $langs->trans("FileOk");
+                $htaccessHTML = img_picto($langs->trans("ModificationNeeded"), "statut7") . $langs->trans("FileKo");
             }
+        }else {
+            $htaccessHTML = img_picto($langs->trans("Error"), "statut8") . $langs->trans("MissingFile");
         }
 
         // Création du HTML pour le fichier .htpasswd
         if($fe_htpasswd){
-            if(true != false){
+            if($htaccessprotectaccount->getMD5() == md5_file(DOL_DOCUMENT_ROOT."/.htpasswd")){
                 $htpasswdHTML = img_picto($langs->trans("Ok"), "statut4") . $langs->trans("FileOk");
-            } elseif (true == false) {
-                $htpasswdHTML = img_picto($langs->trans("ModificationNeeded"), "statut7") . $langs->trans("ModificationNeeded");
-            } else {
-                $htpasswdHTML = img_picto($langs->trans("Error"), "statut8") . $langs->trans("FileOk");
+            } else{
+                $htpasswdHTML = img_picto($langs->trans("ModificationNeeded"), "statut7") . $langs->trans("FileKo");
             }
+        }else {
+            $htpasswdHTML = img_picto($langs->trans("Error"), "statut8") . $langs->trans("MissingFile");
         }
 
         $rightHTML .= ' ' . $right;
@@ -424,23 +428,23 @@ if($o==1){
 
 // Tab HtaccessContent
 if($o==2){
-    // tableau aff conf generer
-    print '<table class="noborder" width="100%">';
-    print '  <tr class="liste_titre">';
-    print '    <td>Htaccess</td>';
-    print '  </tr>';
-    print '  <tr>';
-    print '    <td><pre style="padding: 5px"><code>';
 
     $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
     require_once $dir.'/'.$classname.'.class.php';
     $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
-    print        htmlentities($obj->GenerateFileContent());
 
+    // tableau aff conf generer
+    print '<table class="noborder" width="100%">';
+    print '  <tr class="liste_titre">';
+    print '    <td>'.$langs->trans("GenerationHtaccess").'</td>';
+    print '  </tr>';
+    print '  <tr>';
+    print '    <td><pre style="padding: 5px"><code>';
+    print        htmlentities($obj->GenerateFileContent());
     print '    </code></pre></td>';
     print '  </tr>';
     print '  <tr class="liste_titre">';
-    print '    <td>Htpasswd</td>';
+    print '    <td>'.$langs->trans("GenerationHtpasswd").'</td>';
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
@@ -449,27 +453,52 @@ if($o==2){
     print '  </tr>';
     print '</table>';
 
-
     // tableau aff actuel
     print '<table class="noborder" width="100%">';
     print '  <tr class="liste_titre">';
     print '    <td>'.$langs->trans("ContenuHtaccess").'</td>';
+    print '    <td align="right" style="padding-right: 5px">';
+    if ($fe_htaccess) {
+        if ($obj->getMD5() == md5_file(DOL_DOCUMENT_ROOT . "/.htaccess")) {
+            print img_picto("", "tick") . $langs->trans("FileOk");
+        } else {
+            print '<a id="linksynchtaccess" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htaccess">'. img_picto("", "refresh") . $langs->trans("ReplaceFile") . '</a>';
+        }
+    } else {
+        print img_picto("", "refresh") . $langs->trans("GenerateFile");
+    }
+    print '    </td>';
     print '  </tr>';
     print '  <tr>';
-    print '    <td><pre style="padding: 5px"><code>';
+    print '    <td colspan="2"><pre style="padding: 5px"><code>';
     print $fe_htaccess ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT . "/.htaccess")) : $langs->trans("MissingFile") ;
     print '    </code></pre></td>';
     print '  </tr>';
     print '  <tr class="liste_titre">';
     print '    <td>'.$langs->trans("ContenuHtpasswd").'</td>';
+    print '    <td align="right" style="padding-right: 5px">';
+    if($fe_htpasswd){
+        if($htaccessprotectaccount->getMD5() == md5_file(DOL_DOCUMENT_ROOT."/.htpasswd")){
+            print img_picto("", "tick") . $langs->trans("FileOk");
+        }else{
+            print '<a id="linksynchtpasswd" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htpasswd">'. img_picto("", "refresh") . $langs->trans("ReplaceFile") . '</a>';
+        }
+    }
+    else{
+        print img_picto("", "refresh") .$langs->trans("GenerateFile");
+    }
+    print '    </td>';
     print '  </tr>';
     print '  <tr>';
-    print '    <td><pre style="padding: 5px"><code>';
+    print '    <td colspan="2"><pre style="padding: 5px"><code>';
     print $fe_htpasswd ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd")) : $langs->trans('MissingFile');
     print '    </code></pre></td>';
     print '  </tr>';
     print '</table>';
-    print '<p style="text-align: right"><a id="linkgeneration"> Generer / remplacer les fichiers</a></p>';
+
+    print '<p style="text-align: right"><a id="linkgeneration">';
+
+    print '</a></p>';
 
     print '<div id="dialog-confirm2" title="Erreur" style="display: none;">';
     print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Attention cela supprimer votre configuration actuel !!! </p>';
@@ -477,7 +506,9 @@ if($o==2){
 
     print ' <script type="text/javascript" language="javascript">
             jQuery(document).ready(function() {
-                jQuery("#linkgeneration").click(function(e) {
+
+                jQuery("#linksynchtpasswd, #linksynchtaccess ").click(function(e) {
+                    var that = this;
                     e.preventDefault();
                     e.stopPropagation();
                     jQuery("#dialog-confirm2").dialog({
@@ -489,7 +520,7 @@ if($o==2){
                             },
                             Ok: function() {
                                 jQuery( this ).dialog( "close" );
-                                document.location.href = document.location.href+"0";
+                                document.location.href =  jQuery(that).attr("href");
                             }
                         }
                     });
