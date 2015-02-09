@@ -57,5 +57,5 @@ ReplaceFile = Remplacer le fichier
 
 
 ################################################## Alerte JS ###################################################
-AlertReplace = Attention vous êtes sur le point de supprimer votre configuration actuelle ! <br/> Voulez-vous continuer ?
-AlertHtpasswdMissing = Impossible de générer le fichier .htaccess sans fichier .htpasswd avec votre configuration du module. <br /> Veuillez d'abord créer le fichier .htpasswd.
+AlertReplace = Attention vous êtes sur le point de supprimer votre configuration actuelle ! <br/>Voulez-vous continuer ?
+AlertHtpasswdMissing = Impossible de générer le fichier .htaccess sans fichier .htpasswd avec votre configuration du module. <br />Veuillez d'abord créer le fichier .htpasswd.
