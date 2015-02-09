@@ -41,6 +41,10 @@ abstract class modGenerateHtaccess
         return  $return . $info[1];
     }
 
+    function getMD5(){
+        return md5($this->GenerateFileContent());
+    }
+
     /**
      *  Generate htaccess file content
      *
