@@ -183,7 +183,7 @@ switch ($o) {
 llxHeader('',$langs->trans('Title'),'');
 
 //Adding jquery code
-/*
+/*éé
 print '<script type="text/javascript" language="javascript">
 jQuery(document).ready(function() {
 
