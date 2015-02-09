@@ -73,6 +73,7 @@ if (GETPOST('action')) {
                 $htaccessprotectaccount->passwd = crypt(GETPOST('passwd'));
                 $id = $htaccessprotectaccount->create($user);
                 break;
+
             case 'delete':
                 $htaccessprotectaccount->fetch(GETPOST('id'));
                 $result = $htaccessprotectaccount->delete($user);
@@ -86,12 +87,29 @@ if (GETPOST('action')) {
                 $htaccessprotectip->trusted = (GETPOST('trusted') == 'on');
                 $id = $htaccessprotectip->create($user);
                 break;
+
             case 'delete':
                 $htaccessprotectip->fetch(GETPOST('id'));
                 $result = $htaccessprotectip->delete($user);
                 break;
+
             case 'change':
                 while(!dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", GETPOST("name"))); // RAGE MODE //TODO a modifier lol ^^
+                break;
+
+            case 'sync':
+                if (GETPOST('file')) {
+                    if (GETPOST('file') == "htaccess") {
+                        $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
+                        require_once $dir.'/'.$classname.'.class.php';
+                        $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
+                        file_put_contents(DOL_DOCUMENT_ROOT."/.htaccess", $obj->GenerateFileContent());
+                    } elseif (GETPOST('file') == "htpasswd") {
+                        file_put_contents(DOL_DOCUMENT_ROOT."/.htpasswd", $htaccessprotectaccount->GenerateFileContent());
+                        //file_put_contents(DOL_DOCUMENT_ROOT."/htpasswd", $htaccessprotectaccount->GenerateFileContent());
+                        //rename(DOL_DOCUMENT_ROOT."/htpasswd", DOL_DOCUMENT_ROOT."/.htpasswd");
+                    }
+                }
                 break;
         }
     }
@@ -159,15 +177,6 @@ switch ($o) {
 
     case 1:
         break;
-
-    case 20:
-        $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
-        require_once $dir.'/'.$classname.'.class.php';
-        $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
-        file_put_contents(DOL_DOCUMENT_ROOT."/.htaccess", $obj->GenerateFileContent());
-        file_put_contents(DOL_DOCUMENT_ROOT."/htpasswd", $htaccessprotectaccount->GenerateFileContent());
-        rename(DOL_DOCUMENT_ROOT."/htpasswd", DOL_DOCUMENT_ROOT."/.htpasswd");
-        $o = 2;
 
     case 2:
         $fe_htaccess = file_exists(DOL_DOCUMENT_ROOT."/.htaccess");
@@ -465,7 +474,7 @@ if($o==2){
             print '<a id="linksynchtaccess" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htaccess">'. img_picto("", "refresh") . $langs->trans("ReplaceFile") . '</a>';
         }
     } else {
-        print img_picto("", "refresh") . $langs->trans("GenerateFile");
+        print '<a id="linksynchtaccess" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htaccess">'. img_picto("", "refresh") . $langs->trans("GenerateFile") . '</a>';
     }
     print '    </td>';
     print '  </tr>';
@@ -485,7 +494,7 @@ if($o==2){
         }
     }
     else{
-        print img_picto("", "refresh") .$langs->trans("GenerateFile");
+        print '<a id="linksynchtpasswd" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htpasswd">'. img_picto("", "refresh") . $langs->trans("GenerateFile") . '</a>';
     }
     print '    </td>';
     print '  </tr>';
