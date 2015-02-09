@@ -182,7 +182,7 @@ if($o == 20){
 llxHeader('',$langs->trans('Title'),'');
 
 //Adding jquery code
-/*
+/*éé
 print '<script type="text/javascript" language="javascript">
 jQuery(document).ready(function() {
 
