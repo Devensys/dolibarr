@@ -102,8 +102,63 @@ if (GETPOST('action')) {
 $ipList = $htaccessprotectip->fetchAll();
 $accountList = $htaccessprotectaccount->fetchAll();
 
-//$db->close();
+switch ($o) {
+    case 0:
+        $right = substr(sprintf('%o',fileperms(DOL_DOCUMENT_ROOT)), -3);
+        $verapache = apache_get_version();
 
+        // Création du HTML pour les droits
+        if($right == 775){
+            $rightHTML = img_picto($langs->trans("Ok"), "statut4");
+        } else if ($right == 777) {
+            $infoAdmin = '<b>' . $langs->trans("TakeCare") . '</b><br/>- ' . $langs->trans("HighRootFolderRights") . '<br/>- ' . $langs->trans("SetRootFolderRights") . ' ' . $langs->trans("RightsBecauseHigh");
+            $rightHTML = img_picto($langs->trans("ModificationNeeded"), "statut7");
+        } else {
+            $infoAdmin = '<b>' . $langs->trans("TakeCare") . '</b><br/>- ' . $langs->trans("LowRootFolderRights") . '<br/>- ' . $langs->trans("SetRootFolderRights") . ' ' . $langs->trans("RightsBecauseLow");
+            $rightHTML = img_picto($langs->trans("Error"), "statut8");
+        }
+
+        // Création du HTML pour la version du serveur
+        if (strpos($verapache, '2.4') === false) {
+            $infoAdmin .= '<br/>- ' . $langs->trans("BadApacheVersion");
+            $serverHTML = img_picto($langs->trans("Error"), "statut8");
+        } else {
+            $serverHTML = img_picto($langs->trans("Ok"), "statut4");
+        }
+
+        // Création du HTML pour le fichier .htaccess
+        if($fe_htaccess){
+            if(true != false){
+                $htaccessHTML = img_picto($langs->trans("Ok"), "statut4") . $langs->trans("FileOk");
+            } elseif (true == false) {
+                $htaccessHTML = img_picto($langs->trans("ModificationNeeded"), "statut7") . $langs->trans("ModificationNeeded");
+            } else {
+                $htaccessHTML = img_picto($langs->trans("Error"), "statut8") . $langs->trans("FileOk");
+            }
+        }
+
+        // Création du HTML pour le fichier .htpasswd
+        if($fe_htpasswd){
+            if(true != false){
+                $htpasswdHTML = img_picto($langs->trans("Ok"), "statut4") . $langs->trans("FileOk");
+            } elseif (true == false) {
+                $htpasswdHTML = img_picto($langs->trans("ModificationNeeded"), "statut7") . $langs->trans("ModificationNeeded");
+            } else {
+                $htpasswdHTML = img_picto($langs->trans("Error"), "statut8") . $langs->trans("FileOk");
+            }
+        }
+
+        $rightHTML .= ' ' . $right;
+        $serverHTML .= ' ' . $verapache;
+
+        break;
+
+    case 1:
+        break;
+
+    case 2:
+        break;
+}
 
 
 
@@ -130,70 +185,40 @@ dol_fiche_head(array(array("?o=0", $langs->trans("GeneralInfo"), "ActiveConf"),
                      array("?o=1", $langs->trans("Configuration"), "ModConf"),
                      array("?o=2", $langs->trans("FileContent"), "AffFiles")), $o);
 
-
 // Tab confActive
 if($o==0){
+    if (isset($infoAdmin)) {
+        print info_admin($infoAdmin);
+    }
+
     print '<table class="noborder" width="100%">';
     print '  <tr class="liste_titre">';
     print '    <td>'.$langs->trans("GeneralInfo").'</td>';
-    print '    <td width="50" ></td>';
-    print '    <td align="right" width="160">&nbsp;</td>';
+    print '    <td>&nbsp;</td>';
     print '  </tr>';
     $var = true;
 
-    $right = substr(sprintf('%o',fileperms(DOL_DOCUMENT_ROOT)), -3);
-
-    if($right < 755){
-        print info_admin($langs->trans("DisplayInfo"));
-        //TODO changer le text et faire le filtrage des droit correctement ...
-    }
-
     print '  <tr '.$bc[$var].'>';
     print '    <td width="60%">'.$langs->trans("DirectoryRight").'</td>';
-    print '    <td align="right">' . img_picto($langs->trans("Delete"), "delete" ) . '</td>';
-    print '    <td>' . $right . '</td>';
+    print '    <td>' . $rightHTML. '</td>';
     print '  </tr>';
 
     $var=!$var;
     print '  <tr '.$bc[$var].'>';
-    print '    <td width="60%">'.$langs->trans("DirectoryRight").'</td>';
-    $verapache = apache_get_version();
-    print '    <td align="right">' . img_picto("e", strpos($verapache, '2.4') !== false ? "tick" : "delete" ) . '</td>';
-    print '    <td>' . apache_get_version() . '</td>';
+    print '    <td width="60%">'.$langs->trans("ServerVersion").'</td>';
+    print '    <td>' . $serverHTML . '</td>';
     print '  </tr>';
 
     $var=!$var;
     print '  <tr '.$bc[$var].'>';
     print '    <td width="60%">'.$langs->trans("HtaccessFileExist").'</td>';
-    if($fe_htaccess){
-        if(true != false){
-            print '    <td align="right">' . img_picto($langs->trans("Ok"), "tick" ) . '</td>';
-            print '    <td>' . $langs->trans("FileOk") . '</td>';
-        }else{
-            print '    <td align="right">' . img_picto($langs->trans("Ko"), "delete" ) . '</td>';
-            print '    <td>' . $langs->trans("FileKo") . '</td>';
-        }
-    }else{
-        print '    <td align="right">' . img_picto($langs->trans("Ko"), "delete" ) . '</td>';
-        print '    <td>' . $langs->trans("MissingFile") . '</td>';
-    }
+    print '    <td>' . $htaccessHTML . '</td>';
     print '  </tr>';
 
     $var=!$var;
     print '  <tr '.$bc[$var].'>';
     print '    <td width="60%">'.$langs->trans("HtpasswdFileExist").'</td>';
-    if($fe_htpasswd){
-        if(true != false){
-            print '    <td align="right">' . img_picto($langs->trans("Ok"), "tick" ) . '</td>';
-            print '    <td>' . $langs->trans("FileOk") . '</td>';
-        }else{
-            print '    <td align="right">' . img_picto($langs->trans("Ko"), "delete" ) . '</td>';
-            print '    <td>' . $langs->trans("FileKo") . '</td>';
-        }
-    }else{
-        print '    <td align="right">' . img_picto($langs->trans("MissingFile"), "delete" ) . '</td>';
-        print '    <td>' . $langs->trans("MissingFile") . '</td>';
-    }
+    print '    <td>' . $htpasswdHTML . '</td>';
     print '  </tr>';
     print '</table>';
 }
@@ -403,7 +428,7 @@ if($o==2){
     print '    </code></pre></td>';
     print '  </tr>';
     print '  <tr class="liste_titre">';
-    print '    <td>Htpassword</td>';
+    print '    <td>Htpasswd</td>';
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
@@ -424,7 +449,7 @@ if($o==2){
     print '    </code></pre></td>';
     print '  </tr>';
     print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("ContenuHtpassword").'</td>';
+    print '    <td>'.$langs->trans("ContenuHtpasswd").'</td>';
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';

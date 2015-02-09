@@ -11,7 +11,7 @@ FileContent = Contenu des fichiers
 DirectoryRight = Droit du dossier racine
 ServerVersion = Version du serveur
 HtaccessFileExist = Informations du fichier Htaccess
-HtpasswdFileExist = Informations du fichier Htpasword
+HtpasswdFileExist = Informations du fichier Htpasswd
 MissingFile = Fichier absent du serveur
 FileOk = Fichier correct
 FileKo = Fichier présent mais différent de la configuration du module
@@ -36,3 +36,13 @@ Pseudo = Identifiant
 AllowWhiteBlackPromptDesc = Blacklisting d'IP, Whitelisting d'IP et Authentification par Prompt pour les autres
 PromptDesc = Authentification par Prompt pour tous
 WhitelistPromptDesc = Whitelisting d'IP et Authentification par Prompt pour les autres
+
+############################################## Messages d'information ##############################################
+TakeCare = Attention !
+LowRootFolderRights = Vos droits sur le dossier racine de Dolibarr ne permettent pas la génération automatiques des fichiers .htaccess et .htpasswd.
+HighRootFolderRights = Vos droits sur le dossier racine de Dolibarr sont trop permissifs.
+SetRootFolderRights = Veuillez configurer à 755 les droits sur ce dossier
+RightsBecauseLow = pour le bon fonctionnement de ce module.
+RightsBecauseHigh = pour des raisons de sécurité.
+BadApacheVersion = Certaines fonctionnalités de ce module nécessitent Apache 2.4.* au minimum pour leur bon fonctionnement.
+ModificationNeeded = Modification nécessaire

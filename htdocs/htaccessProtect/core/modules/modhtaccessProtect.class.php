@@ -41,9 +41,9 @@ class modhtaccessProtect extends DolibarrModules{
 
         $this->numero = 260026;
         $this->rights_class = 'htaccessProtect';
-        $this->family = "Devensys Secure Suite ";
+        $this->family = "Devensys Secure Suite";
         $this->name = "Protection Htaccess/Htpasswd";
-        $this->description = $langs->trans("descmodule");
+        $this->description = $langs->trans("DescModule");
         $this->version = '1.0.1';
         $this->const_name = 'MAIN_MODULE_'.strtoupper(preg_replace('/^mod/i','',get_class($this)));
         $this->special = 2;
