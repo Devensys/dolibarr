@@ -1,9 +1,4 @@
 <?php
-
-error_reporting(E_ALL);
-ini_set("display_errors", 1);
-
-
 /* Copyright (C) 2007-2010 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2014-2015  Teddy Andreotti <125155@supinfo.com>
  * Copyright (C) 2014-2015  Virgile Cabane <129596@supinfo.com>
