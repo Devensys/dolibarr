@@ -25,7 +25,6 @@ class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
         parent::__construct($bddips, $accountList, $langs);
         $this->name = preg_split("/_/", get_class($this))[1];
         $this->desc = $this->langs->trans("WhitelistPromptDesc");
-        //TODO traduire toute le module.
     }
 
     /**
@@ -68,25 +67,25 @@ class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
 
         if(count($this->ipwhite) && !count($this->ipblack) && count($this->accountList)){
             $return[0] = 1;
-            $return[1] = "";
+            $return[1] = $this->langs->trans("ConfigurationOk");
             return $return;
         }
 
         else if(count($this->ipblack)){
             $return[0] = 3;
-            $return[1] = "Les ips blacklist ne seront pas pris en compte";
+            $return[1] = $this->langs->trans("ConfigurationBlackNotSupported");
             return $return;
         }
 
-        else if(count($this->ipwhite)){
-            $return[0] = 2;
-            $return[1] = "Il n'y a pas d'ip Blacklister ";
+        else if(!count($this->accountList)){
+            $return[0] = 3;
+            $return[1] = $this->langs->trans("ConfigurationUserNeeded");
             return $return;
         }
 
         else{
             $return[0] = 3;
-            $return[1] = "Erreur. ";
+            $return[1] = $this->langs->trans("Error");
             return $return;
         }
     }

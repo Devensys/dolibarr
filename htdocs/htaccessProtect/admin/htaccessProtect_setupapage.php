@@ -101,8 +101,6 @@ if (GETPOST('action')) {
                         file_put_contents(DOL_DOCUMENT_ROOT."/.htaccess", $obj->GenerateFileContent());
                     } elseif (GETPOST('file') == "htpasswd") {
                         file_put_contents(DOL_DOCUMENT_ROOT."/.htpasswd", $htaccessprotectaccount->GenerateFileContent());
-                        //file_put_contents(DOL_DOCUMENT_ROOT."/htpasswd", $htaccessprotectaccount->GenerateFileContent());
-                        //rename(DOL_DOCUMENT_ROOT."/htpasswd", DOL_DOCUMENT_ROOT."/.htpasswd");
                     }
                 }
                 break;
@@ -171,6 +169,26 @@ switch ($o) {
         break;
 
     case 1:
+        // Charge tableau des modules generation
+        clearstatcache();
+        $handle=opendir($dir);
+        $i=1;
+        if (is_resource($handle))
+        {
+            while (($file = readdir($handle))!==false)
+            {
+                if (preg_match('/(modGenerateHtaccess_[a-z]+)\.class\.php/i',$file,$reg))
+                {
+                    // Chargement de la classe
+                    $classname = $reg[1];
+                    require_once $dir.'/'.$file;
+                    $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
+                    $arrayhandler[$obj->name]=$obj;
+                    $i++;
+                }
+            }
+            closedir($handle);
+        }
         break;
 
     case 2:
@@ -245,30 +263,6 @@ if($o==0){
 
 // Tab EditConf
 if($o==1){
-    // Select Algo for generation
-    //TODO faire trad for this block
-
-    // Charge tableau des modules generation
-    clearstatcache();
-    $handle=opendir($dir);
-    $i=1;
-    if (is_resource($handle))
-    {
-        while (($file = readdir($handle))!==false)
-        {
-            if (preg_match('/(modGenerateHtaccess_[a-z]+)\.class\.php/i',$file,$reg))
-            {
-                // Chargement de la classe
-                $classname = $reg[1];
-                require_once $dir.'/'.$file;
-                $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
-                $arrayhandler[$obj->name]=$obj;
-                $i++;
-            }
-        }
-        closedir($handle);
-    }
-
     print '  <table class="noborder" width="100%">';
     print '    <tr class="liste_titre">';
     print '      <td>'.$langs->trans("Name").'</td>';
@@ -356,7 +350,7 @@ if($o==1){
     print '    </tr>';
     $var = true;
 
-    if (sizeof($accountList)) {
+    if (count($accountList)) {
         foreach($accountList as $account) {
             print '    <tr '.$bc[$var].'>';
             print '      <td width="60%">' . $account->pseudo . '</td>';

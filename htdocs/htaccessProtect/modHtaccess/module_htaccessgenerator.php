@@ -42,16 +42,16 @@ abstract class modGenerateHtaccess
 
         switch($info[0]){
             case 1 :
-                $return .= img_picto("", "statut4");
+                $return .= img_picto($this->langs->trans("Ok"), "statut4");
                 break;
             case 2 :
-                $return .= img_picto("", "statut1");
+                $return .= img_picto($this->langs->trans("Information"), "statut7");
                 break;
             case 3 :
-                $return .= img_picto("", "statut8");
+                $return .= img_picto($this->langs->trans("Error"), "statut8");
                 break;
             default:
-                $return .= img_picto("", "statut5");
+                $return .= img_picto($this->langs->trans("oO'"), "statut5");
         }
 
         return  $return . $info[1];

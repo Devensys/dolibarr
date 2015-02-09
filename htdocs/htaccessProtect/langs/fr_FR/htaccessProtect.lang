@@ -59,3 +59,11 @@ ReplaceFile = Remplacer le fichier
 ################################################## Alerte JS ###################################################
 AlertReplace = Attention vous êtes sur le point de supprimer votre configuration actuelle ! <br/>Voulez-vous continuer ?
 AlertHtpasswdMissing = Impossible de générer le fichier .htaccess sans fichier .htpasswd avec votre configuration du module. <br />Veuillez d'abord créer le fichier .htpasswd.
+
+
+################################################### Classes ####################################################
+ConfigurationOk = Configuration correcte
+ConfigurationBlackNotSupported = Les IP blacklistées ne seront pas prisent en compte
+ConfigurationNoBlack = Il n'y a pas d'IP blacklistée
+ConfigurationIPNotSupported = Ce mode de prend pas en compte les whitelists et blacklists d'IP
+ConfigurationUserNeeded = Ce mode nécessite au moins un compte utilisateur

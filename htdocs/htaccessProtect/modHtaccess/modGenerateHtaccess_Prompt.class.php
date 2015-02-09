@@ -25,7 +25,6 @@ class modGenerateHtaccess_Prompt extends modGenerateHtaccess
         parent::__construct($bddips, $accountList, $langs);
         $this->name = preg_split("/_/", get_class($this))[1];
         $this->desc = $this->langs->trans("PromptDesc");
-        //TODO traduire toute le module.
     }
 
     /**
@@ -57,25 +56,25 @@ class modGenerateHtaccess_Prompt extends modGenerateHtaccess
 
         if(!count($this->ipwhite) && !count($this->ipblack) && count($this->accountList)){
             $return[0] = 1;
-            $return[1] = "";
+            $return[1] = $this->langs->trans("ConfigurationOk");
             return $return;
         }
 
         else if(!count($this->accountList)){
             $return[0] = 3;
-            $return[1] = "Il faut au moins un comptes utilisateur";
+            $return[1] = $this->langs->trans("ConfigurationUserNeeded");
             return $return;
         }
 
         else if(count($this->ipwhite) || count($this->ipblack) ){
             $return[0] = 2;
-            $return[1] = " Ce mod de prend pas en compte les ips ";
+            $return[1] = $this->langs->trans("ConfigurationIPNotSupported");
             return $return;
         }
 
         else{
             $return[0] = 3;
-            $return[1] = "Erreur. ";
+            $return[1] = $this->langs->trans("Error");
             return $return;
         }
     }
