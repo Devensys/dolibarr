@@ -64,8 +64,6 @@ $dir = DOL_DOCUMENT_ROOT . "/htaccessProtect/modHtaccess/";
 
 $htaccessprotectip = new Htaccessprotectip($db);
 $htaccessprotectaccount = new Htaccessprotectaccount($db);
-$fe_htaccess = file_exists(DOL_DOCUMENT_ROOT."/.htaccess");
-$fe_htpasswd = file_exists(DOL_DOCUMENT_ROOT."/.htpasswd");
 
 if (GETPOST('action')) {
     if (GETPOST('entity')) {
@@ -104,6 +102,8 @@ $accountList = $htaccessprotectaccount->fetchAll();
 
 switch ($o) {
     case 0:
+        $fe_htaccess = file_exists(DOL_DOCUMENT_ROOT."/.htaccess");
+        $fe_htpasswd = file_exists(DOL_DOCUMENT_ROOT."/.htpasswd");
         $right = substr(sprintf('%o',fileperms(DOL_DOCUMENT_ROOT)), -3);
         $verapache = apache_get_version();
 
@@ -156,18 +156,19 @@ switch ($o) {
     case 1:
         break;
 
-    case 2:
-        break;
-}
+    case 20:
+        $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
+        require_once $dir.'/'.$classname.'.class.php';
+        $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
+        file_put_contents(DOL_DOCUMENT_ROOT."/.htaccess", $obj->GenerateFileContent());
+        file_put_contents(DOL_DOCUMENT_ROOT."/htpasswd", $htaccessprotectaccount->GenerateFileContent());
+        rename(DOL_DOCUMENT_ROOT."/htpasswd", DOL_DOCUMENT_ROOT."/.htpasswd");
+        $o = 2;
 
-//Generate htaccess and htpassword
-if($o == 20){
-    $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
-    require_once $dir.'/'.$classname.'.class.php';
-    $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
-    file_put_contents(DOL_DOCUMENT_ROOT."/.htaccess", $obj->GenerateFileContent());
-    file_put_contents(DOL_DOCUMENT_ROOT."/.htpasswd", $htaccessprotectaccount->GenerateFileContent());
-    $o = 2;
+    case 2:
+        $fe_htaccess = file_exists(DOL_DOCUMENT_ROOT."/.htaccess");
+        $fe_htpasswd = file_exists(DOL_DOCUMENT_ROOT."/.htpasswd");
+        break;
 }
 
 
