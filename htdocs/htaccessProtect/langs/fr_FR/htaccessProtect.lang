@@ -16,7 +16,17 @@ MissingFile = Fichier absent du serveur
 FileOk = Fichier correct
 FileKo = Fichier présent mais différent de la configuration du module
 
-########################################## Tableau de comptes htpasswd ##########################################
+############################################## Messages d'information ##############################################
+TakeCare = Attention !
+LowRootFolderRights = Vos droits sur le dossier racine de Dolibarr ne permettent pas la génération automatiques des fichiers .htaccess et .htpasswd.
+HighRootFolderRights = Vos droits sur le dossier racine de Dolibarr sont trop permissifs.
+SetRootFolderRights = Veuillez configurer à 755 les droits sur ce dossier
+RightsBecauseLow = pour le bon fonctionnement de ce module.
+RightsBecauseHigh = pour des raisons de sécurité.
+BadApacheVersion = Certaines fonctionnalités de ce module nécessitent Apache 2.4.* au minimum pour leur bon fonctionnement.
+ModificationNeeded = Modification nécessaire
+
+############################################# Tableau d'IP htaccess #############################################
 Name = Nom
 Ip = Adresse IP
 Whitelist = Autorisée
@@ -37,12 +47,10 @@ AllowWhiteBlackPromptDesc = Blacklisting d'IP, Whitelisting d'IP et Authentifica
 PromptDesc = Authentification par Prompt pour tous
 WhitelistPromptDesc = Whitelisting d'IP et Authentification par Prompt pour les autres
 
-############################################## Messages d'information ##############################################
-TakeCare = Attention !
-LowRootFolderRights = Vos droits sur le dossier racine de Dolibarr ne permettent pas la génération automatiques des fichiers .htaccess et .htpasswd.
-HighRootFolderRights = Vos droits sur le dossier racine de Dolibarr sont trop permissifs.
-SetRootFolderRights = Veuillez configurer à 755 les droits sur ce dossier
-RightsBecauseLow = pour le bon fonctionnement de ce module.
-RightsBecauseHigh = pour des raisons de sécurité.
-BadApacheVersion = Certaines fonctionnalités de ce module nécessitent Apache 2.4.* au minimum pour leur bon fonctionnement.
-ModificationNeeded = Modification nécessaire
+############################################# Contenu des fichiers #############################################
+GenerationHtaccess = Fichier .htaccess (module)
+GenerationHtpasswd = Fichier .htpasswd (module)
+ContenuHtaccess = Fichier .htaccess (serveur)
+ContenuHtpasswd = Fichier .htpasswd (serveur)
+GenerateFile = Créer le fichier
+ReplaceFile = Remplacer le fichier
