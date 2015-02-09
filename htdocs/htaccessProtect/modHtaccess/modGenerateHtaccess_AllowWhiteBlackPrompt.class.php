@@ -40,7 +40,7 @@ class modGenerateHtaccess_AllowWhiteBlackPrompt extends modGenerateHtaccess
         $file .= "\"> \n";
         $file .= "		AuthType Basic \n";
         $file .= "		AuthName \"restricted area\" \n";
-        $file .= "		AuthUserFile /var/www/develop/htdocs/.htpasswd \n";
+        $file .= "		AuthUserFile ".DOL_DOCUMENT_ROOT."/.htpasswd \n";
         $file .= "		require valid-user \n";
         $file .= "	</If> \n";
         $file .= "</IfModule> \n";

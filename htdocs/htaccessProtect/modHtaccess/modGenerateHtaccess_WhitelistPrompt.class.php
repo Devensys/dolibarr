@@ -20,18 +20,22 @@ class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
     function GenerateFileContent(){
         $file = "";
         $file .= "Order Deny,Allow \n";
-        $file .= "Deny from all \n\n";
-        foreach( $this->ipwhite as $ipb) {
-            $file .= "Allow from " . $ipb->ip . "\n";
+        $file .= "Deny from all \n";
+        if(count($this->ipwhite)) {
+            $file .= "\n";
+            foreach ($this->ipwhite as $ipb) {
+                $file .= "Allow from " . $ipb->ip . "\n";
+            }
         }
         $file .= "\n";
         $file .= "<IfModule mod_rewrite.c> \n";
         $file .= "	RewriteEngine On \n";
-        $file .= "  AuthType Basic \n";
+        $file .= "	AuthType Basic \n";
         $file .= "	AuthName \"restricted area\" \n";
-        $file .= "	AuthUserFile /var/www/develop/htdocs/.htpasswd \n";
+        $file .= "	AuthUserFile ".DOL_DOCUMENT_ROOT."/.htpasswd \n";
         $file .= "	require valid-user \n";
         $file .= "</IfModule> \n";
+        $file .= "\n";
         $file .= "Satisfy any";
         return $file;
     }

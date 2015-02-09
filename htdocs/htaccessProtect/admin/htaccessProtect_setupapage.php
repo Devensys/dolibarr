@@ -93,7 +93,7 @@ if (GETPOST('action')) {
                 $result = $htaccessprotectip->delete($user);
                 break;
             case 'change':
-                dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", GETPOST("name"));
+                while(!dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", GETPOST("name"))); // RAGE MODE //TODO a modifier lol ^^
                 break;
         }
     }
@@ -159,6 +159,17 @@ switch ($o) {
     case 2:
         break;
 }
+
+//Generate htaccess and htpassword
+if($o == 20){
+    $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
+    require_once $dir.'/'.$classname.'.class.php';
+    $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
+    file_put_contents(DOL_DOCUMENT_ROOT."/.htaccess", $obj->GenerateFileContent());
+    file_put_contents(DOL_DOCUMENT_ROOT."/.htpasswd", $htaccessprotectaccount->GenerateFileContent());
+    $o = 2;
+}
+
 
 
 
@@ -453,12 +464,37 @@ if($o==2){
     print '  </tr>';
     print '  <tr>';
     print '    <td><pre style="padding: 5px"><code>';
-    print $fe_htpasswde ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd")) : $langs->trans('MissingFile');
+    print $fe_htpasswd ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd")) : $langs->trans('MissingFile');
     print '    </code></pre></td>';
     print '  </tr>';
     print '</table>';
+    print '<p style="text-align: right"><a id="linkgeneration"> Generer / remplacer les fichiers</a></p>';
 
+    print '<div id="dialog-confirm2" title="Erreur" style="display: none;">';
+    print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Attention cela supprimer votre configuration actuel !!! </p>';
+    print '</div>';
 
+    print ' <script type="text/javascript" language="javascript">
+            jQuery(document).ready(function() {
+                jQuery("#linkgeneration").click(function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    jQuery("#dialog-confirm2").dialog({
+                        resizable: false,
+                        modal: true,
+                        buttons: {
+                            Annuler : function(){
+                                jQuery(this).dialog("close");
+                            },
+                            Ok: function() {
+                                jQuery( this ).dialog( "close" );
+                                document.location.href = document.location.href+"0";
+                            }
+                        }
+                    });
+                });
+            });
+            </script>';
 }
 dol_fiche_end();
 // End of page
