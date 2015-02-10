@@ -104,6 +104,12 @@ class modGenerateHtaccess_WhitelistBlacklistPrompt extends modGenerateHtaccess
             return $return;
         }
 
+        else if(!count($this->accountList)){
+            $return[0] = 2;
+            $return[1] = $this->langs->trans("ConfigurationNoUser");
+            return $return;
+        }
+
         else{
             $return[0] = 3;
             $return[1] = $this->langs->trans("Error");

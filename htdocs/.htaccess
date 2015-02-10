@@ -1,18 +1,4 @@
-Order Deny,Allow 
-Deny from all 
+Order Allow,Deny
 
-Allow from 82.127.50.242
-Allow from 109.90.151.33
-Allow from 109.190.14.152
-Allow from 109.190.36.128
-Allow from 82.231.30.138
-
-<IfModule mod_rewrite.c> 
-	RewriteEngine On 
-	AuthType Basic 
-	AuthName "restricted area" 
-	AuthUserFile /var/www/develop/htdocs/.htpasswd 
-	require valid-user 
-</IfModule> 
-
-Satisfy any
+Deny from 109.190.36.128
+Allow from all 

@@ -34,8 +34,8 @@ class modGenerateHtaccess_BlacklistPrompt extends modGenerateHtaccess
      */
     function GenerateFileContent(){
         $file = "";
-        $file .= "Order Deny, Allow \n";
-        $file .= "Deny from all \n";
+        $file .= "Order Allow,Deny \n";
+        $file .= "Allow from all \n";
         if(count($this->ipblack)) {
             $file .= "\n";
             foreach ($this->ipblack as $ipb) {
@@ -51,7 +51,7 @@ class modGenerateHtaccess_BlacklistPrompt extends modGenerateHtaccess
         $file .= "	require valid-user \n";
         $file .= "</IfModule> \n";
         $file .= "\n";
-        $file .= "Satisfy any";
+        $file .= "Satisfy all";
         return $file;
     }
 

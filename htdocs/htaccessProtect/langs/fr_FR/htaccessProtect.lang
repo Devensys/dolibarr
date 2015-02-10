@@ -15,16 +15,20 @@ HtpasswdFileExist = Informations du fichier Htpasswd
 MissingFile = Fichier absent du serveur
 FileOk = Fichier correct
 FileKo = Fichier présent mais différent de la configuration du module
+FixRootFolderRight = Appliquer les bons droits
 
 ############################################## Messages d'information ##############################################
 TakeCare = Attention !
-LowRootFolderRights = Vos droits sur le dossier racine de Dolibarr ne permettent pas la génération automatiques des fichiers .htaccess et .htpasswd.
-HighRootFolderRights = Vos droits sur le dossier racine de Dolibarr sont trop permissifs.
+LowRootFolderRights = Vos droits sur le dossier racine de Dolibarr ne permettent pas la génération automatiques des fichiers .htaccess et .htpasswd
+HighRootFolderRights = Vos droits sur le dossier racine de Dolibarr sont trop permissifs
 SetRootFolderRights = Veuillez configurer à 755 les droits sur ce dossier
-RightsBecauseLow = pour le bon fonctionnement de ce module.
-RightsBecauseHigh = pour des raisons de sécurité.
-BadApacheVersion = Certaines fonctionnalités de ce module nécessitent Apache 2.4.* au minimum pour leur bon fonctionnement.
+RightsBecauseLow = pour le bon fonctionnement de ce module
+RightsBecauseHigh = pour des raisons de sécurité
+BadApacheVersion = Certaines fonctionnalités de ce module nécessitent Apache 2.4.* au minimum pour leur bon fonctionnement
 ModificationNeeded = Modification nécessaire
+HtaccessDoesntMatch = Le fichier .htaccess présent sur le serveur est différent de celui configuré dans le module
+HtpasswdDoesntMatch = Le fichier .htpasswd présent sur le serveur est différent de celui configuré dans le module
+ReplaceFiles = Veuillez remplacer le(s) fichier(s) via l'onglet "Contenu des fichiers" pour vous assurer la prise en compte de vos configurations
 
 ############################################# Tableau d'IP htaccess #############################################
 Name = Nom
@@ -49,6 +53,7 @@ WhitelistPromptDesc = Whitelisting d'IP et Authentification par Prompt pour les 
 BlacklistPromptDesc = Blacklisting d'IP et Authentification par Prompt pour les autres
 WhitelistDesc = Whitelisting d'IP, Accès refusé pour les autres
 BlacklistDesc = Blacklisting d'IP, Accès autorisé pour les autres
+NoneDesc = Module par défaut, aucun pré-requis
 
 ############################################# Contenu des fichiers #############################################
 GenerationHtaccess = Fichier .htaccess (module)
@@ -68,16 +73,17 @@ AlertHtpasswdMissing = Impossible de générer le fichier .htaccess sans fichier
 
 ################################################### Classes ####################################################
 ConfigurationOk = Configuration correcte
-ConfigurationBlackNotSupported = Les IP blacklistées ne seront pas prisent en compte
-ConfigurationBlackUserNotSupported = Les IP blacklistées et les comptes utilisateurs ne seront pas prisent en compte
-ConfigurationWhiteNotSupported = Les IP whitelistées ne seront pas prisent en compte
-ConfigurationWhiteUserNotSupported = Les IP whitelistées et les comptes utilisateurs ne seront pas prisent en compte
-ConfigurationIPNotSupported = Les IP whitelistées et blacklistées ne seront pas pris en compte
+ConfigurationBlackNotSupported = Les IP bloquées ne seront pas prisent en compte
+ConfigurationBlackUserNotSupported = Les IP bloquées et les comptes utilisateurs ne seront pas prisent en compte
+ConfigurationWhiteNotSupported = Les IP autorisées ne seront pas prisent en compte
+ConfigurationWhiteUserNotSupported = Les IP autorisées et les comptes utilisateurs ne seront pas prisent en compte
+ConfigurationIPNotSupported = Les IP autorisées et bloquées ne seront pas pris en compte
 ConfigurationUserNotSupported = Les comptes utilisateur ne seront pas pris en compte
-ConfigurationNoBlack = Il n'y a pas d'IP blacklistée
-ConfigurationNoWhite = Il n'y a pas d'IP whitelistée
-ConfigurationNoWhiteBlack = Il n'y a pas d'IP whitelistée ou blacklistée
+ConfigurationNoBlack = Il n'y a pas d'IP bloquée
+ConfigurationNoWhite = Il n'y a pas d'IP autorisée
+ConfigurationNoWhiteBlack = Il n'y a pas d'IP autorisée ou bloquée
+ConfigurationNoUser = Il n'y a pas de compte utilisateur
 ConfigurationUserNeeded = Ce mode nécessite au moins un compte utilisateur
-ConfigurationUserOrWhiteNeeded = Ce mode nécessite au moins un compte utilisateur ou une IP whitelistée
-ConfigurationWhiteNeeded = Ce mode nécessite au moins une IP whitelistée
-ConfigurationBlackNeeded = Ce mode nécessite au moins une IP blacklistée
+ConfigurationUserOrWhiteNeeded = Ce mode nécessite au moins un compte utilisateur ou une IP autorisée
+ConfigurationWhiteNeeded = Ce mode nécessite au moins une IP autorisée
+ConfigurationBlackNeeded = Ce mode nécessite au moins une IP bloquée

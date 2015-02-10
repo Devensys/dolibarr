@@ -132,13 +132,24 @@ class modhtaccessProtect extends DolibarrModules{
      *      @return     int             	1 if OK, 0 if KO
      */
     function init($options = '') {
-        global $conf;
+        global $langs, $conf;
         $sql = array();
+        require_once DOL_DOCUMENT_ROOT . "/htaccessProtect/htaccessprotectip.class.php";
+        require_once DOL_DOCUMENT_ROOT . "/htaccessProtect/htaccessprotectaccount.class.php";
 
         if (empty($conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE)) {
-            //$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE = "Prompt";
-            dolibarr_set_const($this->db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", 'Prompt','chaine',0,'',$conf->entity);
+            dolibarr_set_const($this->db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", 'None','chaine',0,'',$conf->entity);
         }
+
+        // Configuration files creation
+        $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
+        $dir = DOL_DOCUMENT_ROOT . "/htaccessProtect/modHtaccess/";
+        require_once $dir.$classname.'.class.php';
+        $htaccessprotectip = new Htaccessprotectip($this->db);
+        $htaccessprotectaccount = new Htaccessprotectaccount($this->db);
+        $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
+        file_put_contents(DOL_DOCUMENT_ROOT."/.htaccess", $obj->GenerateFileContent());
+        file_put_contents(DOL_DOCUMENT_ROOT."/.htpasswd", $htaccessprotectaccount->GenerateFileContent());
 
         $result = $this->_load_tables('/htaccessProtect/sql/');
         return $this->_init($sql, $options);
@@ -153,6 +164,9 @@ class modhtaccessProtect extends DolibarrModules{
      *      @return     int             	1 if OK, 0 if KO
      */
     function remove($options = '') {
+        // Configuration files delete
+        unlink(DOL_DOCUMENT_ROOT."/.htaccess");
+        unlink(DOL_DOCUMENT_ROOT."/.htpasswd");
         $sql = array();
         return $this->_remove($sql, $options);
     }

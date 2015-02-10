@@ -117,15 +117,16 @@ switch ($o) {
         $fe_htpasswd = file_exists(DOL_DOCUMENT_ROOT."/.htpasswd");
         $right = substr(sprintf('%o',fileperms(DOL_DOCUMENT_ROOT)), -3);
         $verapache = apache_get_version();
+        $infoAdminBegin = '<b>' . $langs->trans("TakeCare") . '</b>';
 
         // Root folder rights HTML generation
         if($right == 775){
             $rightHTML = img_picto($langs->trans("Ok"), "statut4");
         } else if ($right == 777) {
-            $infoAdmin = '<b>' . $langs->trans("TakeCare") . '</b><br/>- ' . $langs->trans("HighRootFolderRights") . '<br/>- ' . $langs->trans("SetRootFolderRights") . ' ' . $langs->trans("RightsBecauseHigh");
+            $infoAdmin = '<br/>- ' . $langs->trans("HighRootFolderRights") . '<br/>- ' . $langs->trans("SetRootFolderRights") . ' ' . $langs->trans("RightsBecauseHigh");
             $rightHTML = img_picto($langs->trans("ModificationNeeded"), "statut7");
         } else {
-            $infoAdmin = '<b>' . $langs->trans("TakeCare") . '</b><br/>- ' . $langs->trans("LowRootFolderRights") . '<br/>- ' . $langs->trans("SetRootFolderRights") . ' ' . $langs->trans("RightsBecauseLow");
+            $infoAdmin = '<br/>- ' . $langs->trans("LowRootFolderRights") . '<br/>- ' . $langs->trans("SetRootFolderRights") . ' ' . $langs->trans("RightsBecauseLow");
             $rightHTML = img_picto($langs->trans("Error"), "statut8");
         }
 
@@ -146,6 +147,8 @@ switch ($o) {
             if($obj->getMD5() == md5_file(DOL_DOCUMENT_ROOT."/.htaccess")){
                 $htaccessHTML = img_picto($langs->trans("Ok"), "statut4") . $langs->trans("FileOk");
             } else {
+                $replaceFiles = true;
+                $infoAdmin .= '<br/>- ' . $langs->trans("HtaccessDoesntMatch");
                 $htaccessHTML = img_picto($langs->trans("ModificationNeeded"), "statut7") . $langs->trans("FileKo");
             }
         }else {
@@ -157,12 +160,21 @@ switch ($o) {
             if($htaccessprotectaccount->getMD5() == md5_file(DOL_DOCUMENT_ROOT."/.htpasswd")){
                 $htpasswdHTML = img_picto($langs->trans("Ok"), "statut4") . $langs->trans("FileOk");
             } else{
+                $replaceFiles = true;
+                $infoAdmin .= '<br/>- ' . $langs->trans("HtpasswdDoesntMatch");
                 $htpasswdHTML = img_picto($langs->trans("ModificationNeeded"), "statut7") . $langs->trans("FileKo");
             }
         }else {
             $htpasswdHTML = img_picto($langs->trans("Error"), "statut8") . $langs->trans("MissingFile");
         }
 
+        if(isset($replaceFiles)) {
+            $infoAdmin .= '<br/>- ' . $langs->trans("ReplaceFiles");
+        }
+
+        if(isset($infoAdmin)) {
+            $infoAdmin = $infoAdminBegin . $infoAdmin;
+        }
         $rightHTML .= ' ' . $right;
         $serverHTML .= ' ' . $verapache;
 
@@ -193,8 +205,8 @@ switch ($o) {
                 }
             }
             closedir($handle);
-            if($moduleList[$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE]->hasIssues() && isset($noIssues)) {
-                while(!dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", $noIssues)); // RAGE MODE //TODO a modifier lol ^^
+            if($conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE != null && $moduleList[$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE]->hasIssues() && isset($noIssues)) {
+                while(!dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", $noIssues)); // RAGE MODE //TODO: a modifier lol ^^
             }
         }
         break;

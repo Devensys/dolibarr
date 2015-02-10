@@ -18,13 +18,13 @@
 
 require_once DOL_DOCUMENT_ROOT .'/htaccessProtect/modHtaccess/module_htaccessgenerator.php';
 
-class modGenerateHtaccess_Blacklist extends modGenerateHtaccess
+class modGenerateHtaccess_None extends modGenerateHtaccess
 {
     function __construct($bddips, $accountList, $langs)
     {
         parent::__construct($bddips, $accountList, $langs);
         $this->name = preg_split("/_/", get_class($this))[1];
-        $this->desc = $this->langs->trans("BlacklistDesc");
+        $this->desc = $this->langs->trans("NoneDesc");
     }
 
     /**
@@ -33,16 +33,7 @@ class modGenerateHtaccess_Blacklist extends modGenerateHtaccess
      *  @return string
      */
     function GenerateFileContent(){
-        $file = "";
-        $file .= "Order Allow,Deny \n";
-        $file .= "Allow from all \n";
-        if(count($this->ipblack)) {
-            $file .= "\n";
-            foreach ($this->ipblack as $ipb) {
-                $file .= "Deny from " . $ipb->ip . "\n";
-            }
-        }
-        return $file;
+        return '';
     }
 
     /**
@@ -54,29 +45,8 @@ class modGenerateHtaccess_Blacklist extends modGenerateHtaccess
      */
     function Info(){
         $return = Array();
-
-        if(!count($this->ipwhite) && count($this->ipblack) && !count($this->accountList)){
-            $return[0] = 1;
-            $return[1] = $this->langs->trans("ConfigurationOk");
-            return $return;
-        }
-
-        else if(!count($this->ipblack)){
-            $return[0] = 3;
-            $return[1] = $this->langs->trans("ConfigurationBlackNeeded");
-            return $return;
-        }
-
-        else if(count($this->ipwhite) || count($this->accountList)){
-            $return[0] = 2;
-            $return[1] = $this->langs->trans("ConfigurationWhiteUserNotSupported");
-            return $return;
-        }
-
-        else{
-            $return[0] = 3;
-            $return[1] = $this->langs->trans("Error");
-            return $return;
-        }
+        $return[0] = 1;
+        $return[1] = $this->langs->trans("ConfigurationOk");
+        return $return;
     }
 }
