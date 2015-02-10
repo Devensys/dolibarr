@@ -18,13 +18,13 @@
 
 require_once DOL_DOCUMENT_ROOT .'/htaccessProtect/modHtaccess/module_htaccessgenerator.php';
 
-class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
+class modGenerateHtaccess_Whitelist extends modGenerateHtaccess
 {
     function __construct($bddips, $accountList, $langs)
     {
         parent::__construct($bddips, $accountList, $langs);
         $this->name = preg_split("/_/", get_class($this))[1];
-        $this->desc = $this->langs->trans("WhitelistPromptDesc");
+        $this->desc = $this->langs->trans("WhitelistDesc");
     }
 
     /**
@@ -42,16 +42,6 @@ class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
                 $file .= "Allow from " . $ipb->ip . "\n";
             }
         }
-        $file .= "\n";
-        $file .= "<IfModule mod_rewrite.c> \n";
-        $file .= "	RewriteEngine On \n";
-        $file .= "	AuthType Basic \n";
-        $file .= "	AuthName \"restricted area\" \n";
-        $file .= "	AuthUserFile ".DOL_DOCUMENT_ROOT."/.htpasswd \n";
-        $file .= "	require valid-user \n";
-        $file .= "</IfModule> \n";
-        $file .= "\n";
-        $file .= "Satisfy any";
         return $file;
     }
 
@@ -65,27 +55,21 @@ class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
     function Info(){
         $return = Array();
 
-        if(count($this->ipwhite) && !count($this->ipblack) && count($this->accountList)){
+        if(count($this->ipwhite) && !count($this->ipblack) && !count($this->accountList)){
             $return[0] = 1;
             $return[1] = $this->langs->trans("ConfigurationOk");
             return $return;
         }
 
-        else if(!count($this->accountList)){
-            $return[0] = 3;
-            $return[1] = $this->langs->trans("ConfigurationUserNeeded");
-            return $return;
-        }
-
         else if(!count($this->ipwhite)){
-            $return[0] = 2;
-            $return[1] = $this->langs->trans("ConfigurationNoWhite");
+            $return[0] = 3;
+            $return[1] = $this->langs->trans("ConfigurationWhiteNeeded");
             return $return;
         }
 
-        else if(count($this->ipblack)){
+        else if(count($this->ipblack) || count($this->accountList)){
             $return[0] = 2;
-            $return[1] = $this->langs->trans("ConfigurationBlackNotSupported");
+            $return[1] = $this->langs->trans("ConfigurationBlackUserNotSupported");
             return $return;
         }
 

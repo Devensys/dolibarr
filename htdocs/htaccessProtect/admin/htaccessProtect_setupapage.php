@@ -118,7 +118,7 @@ switch ($o) {
         $right = substr(sprintf('%o',fileperms(DOL_DOCUMENT_ROOT)), -3);
         $verapache = apache_get_version();
 
-        // Création du HTML pour les droits
+        // Root folder rights HTML generation
         if($right == 775){
             $rightHTML = img_picto($langs->trans("Ok"), "statut4");
         } else if ($right == 777) {
@@ -129,7 +129,7 @@ switch ($o) {
             $rightHTML = img_picto($langs->trans("Error"), "statut8");
         }
 
-        // Création du HTML pour la version du serveur
+        // Server version HTML generation
         if (strpos($verapache, '2.4') === false) {
             $infoAdmin .= '<br/>- ' . $langs->trans("BadApacheVersion");
             $serverHTML = img_picto($langs->trans("Error"), "statut8");
@@ -137,7 +137,7 @@ switch ($o) {
             $serverHTML = img_picto($langs->trans("Ok"), "statut4");
         }
 
-        // Création du HTML pour le fichier .htaccess
+        // .htaccess file HTML generation
         if($fe_htaccess){
             $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
             require_once $dir.'/'.$classname.'.class.php';
@@ -152,7 +152,7 @@ switch ($o) {
             $htaccessHTML = img_picto($langs->trans("Error"), "statut8") . $langs->trans("MissingFile");
         }
 
-        // Création du HTML pour le fichier .htpasswd
+        // .htpasswd file HTML generation
         if($fe_htpasswd){
             if($htaccessprotectaccount->getMD5() == md5_file(DOL_DOCUMENT_ROOT."/.htpasswd")){
                 $htpasswdHTML = img_picto($langs->trans("Ok"), "statut4") . $langs->trans("FileOk");
@@ -169,10 +169,12 @@ switch ($o) {
         break;
 
     case 1:
-        // Charge tableau des modules generation
+        // Load modules list
         clearstatcache();
         $handle=opendir($dir);
         $i=1;
+        $j=0;
+
         if (is_resource($handle))
         {
             while (($file = readdir($handle))!==false)
@@ -183,17 +185,27 @@ switch ($o) {
                     $classname = $reg[1];
                     require_once $dir.'/'.$file;
                     $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
-                    $arrayhandler[$obj->name]=$obj;
+                    $moduleList[$obj->name]=$obj;
+                    if(!$obj->hasIssues()) {
+                        $noIssues = $obj->name;
+                    }
                     $i++;
                 }
             }
             closedir($handle);
+            if($moduleList[$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE]->hasIssues() && isset($noIssues)) {
+                while(!dolibarr_set_const($db, "MAIN_MODULE_HTACCESSPROTECT_MODGENERATE", $noIssues)); // RAGE MODE //TODO a modifier lol ^^
+            }
         }
         break;
 
     case 2:
+        // Load current module
         $fe_htaccess = file_exists(DOL_DOCUMENT_ROOT."/.htaccess");
         $fe_htpasswd = file_exists(DOL_DOCUMENT_ROOT."/.htpasswd");
+        $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
+        require_once $dir.'/'.$classname.'.class.php';
+        $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
         break;
 }
 
@@ -206,192 +218,190 @@ switch ($o) {
  * Put here all code to build page
  ****************************************************/
 
-llxHeader('',$langs->trans('Title'),'');
+llxHeader('',$langs->trans('TitleModule'),'');
 
-//Adding jquery code
-/*éé
-print '<script type="text/javascript" language="javascript">
-jQuery(document).ready(function() {
-
-});
-</script>';
-*/
-
-print_fiche_titre($langs->trans('Title'));
+print_fiche_titre($langs->trans('TitleModule'));
 
 dol_fiche_head(array(array("?o=0", $langs->trans("GeneralInfo"), "ActiveConf"),
                      array("?o=1", $langs->trans("Configuration"), "ModConf"),
                      array("?o=2", $langs->trans("FileContent"), "AffFiles")), $o);
 
-// Tab confActive
-if($o==0){
-    if (isset($infoAdmin)) {
-        print info_admin($infoAdmin);
-    }
+switch ($o) {
+    /* General Informations Tab */
+    case 0:
+        if (isset($infoAdmin)) {
+            print info_admin($infoAdmin);
+        }
 
-    print '<table class="noborder" width="100%">';
-    print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("GeneralInfo").'</td>';
-    print '    <td>&nbsp;</td>';
-    print '  </tr>';
-    $var = true;
+        print '<table class="noborder" width="100%">';
+        print '  <tr class="liste_titre">';
+        print '    <td>'.$langs->trans("GeneralInfo").'</td>';
+        print '    <td>&nbsp;</td>';
+        print '  </tr>';
+        $var = true;
 
-    print '  <tr '.$bc[$var].'>';
-    print '    <td width="60%">'.$langs->trans("DirectoryRight").'</td>';
-    print '    <td>' . $rightHTML. '</td>';
-    print '  </tr>';
+        print '  <tr '.$bc[$var].'>';
+        print '    <td width="60%">'.$langs->trans("DirectoryRight").'</td>';
+        print '    <td>' . $rightHTML. '</td>';
+        print '  </tr>';
 
-    $var=!$var;
-    print '  <tr '.$bc[$var].'>';
-    print '    <td width="60%">'.$langs->trans("ServerVersion").'</td>';
-    print '    <td>' . $serverHTML . '</td>';
-    print '  </tr>';
+        $var=!$var;
+        print '  <tr '.$bc[$var].'>';
+        print '    <td width="60%">'.$langs->trans("ServerVersion").'</td>';
+        print '    <td>' . $serverHTML . '</td>';
+        print '  </tr>';
 
-    $var=!$var;
-    print '  <tr '.$bc[$var].'>';
-    print '    <td width="60%">'.$langs->trans("HtaccessFileExist").'</td>';
-    print '    <td>' . $htaccessHTML . '</td>';
-    print '  </tr>';
+        $var=!$var;
+        print '  <tr '.$bc[$var].'>';
+        print '    <td width="60%">'.$langs->trans("HtaccessFileExist").'</td>';
+        print '    <td>' . $htaccessHTML . '</td>';
+        print '  </tr>';
 
-    $var=!$var;
-    print '  <tr '.$bc[$var].'>';
-    print '    <td width="60%">'.$langs->trans("HtpasswdFileExist").'</td>';
-    print '    <td>' . $htpasswdHTML . '</td>';
-    print '  </tr>';
-    print '</table>';
-}
+        $var=!$var;
+        print '  <tr '.$bc[$var].'>';
+        print '    <td width="60%">'.$langs->trans("HtpasswdFileExist").'</td>';
+        print '    <td>' . $htpasswdHTML . '</td>';
+        print '  </tr>';
+        print '</table>';
+        break;
 
-// Tab EditConf
-if($o==1){
-    print '  <table class="noborder" width="100%">';
-    print '    <tr class="liste_titre">';
-    print '      <td>'.$langs->trans("Name").'</td>';
-    print '      <td>'.$langs->trans("Description").'</td>';
-    print '      <td>'.$langs->trans("Etat").'</td>';
-    print '      <td style="text-align: center;">'.$langs->trans("Action").'</td>';
-    print '    </tr>';
-    $var = true;
+    /* Configuration Tab */
+    case 1:
+        print '  <table class="noborder" width="100%">';
+        print '    <tr class="liste_titre">';
+        print '      <td>'.$langs->trans("Name").'</td>';
+        print '      <td>'.$langs->trans("Description").'</td>';
+        print '      <td>'.$langs->trans("Etat").'</td>';
+        print '      <td style="text-align: center;">'.$langs->trans("Action").'</td>';
+        print '    </tr>';
+        $var = true;
 
-    foreach($arrayhandler as $module){
+        // Modules Table
+        foreach($moduleList as $module){
+            print '    <tr '.$bc[$var].'>';
+            print '      <td>'.$module->name.'</td>';
+            print '      <td>'.$module->desc.'</td>';
+            print '      <td>'.$module->getEtat().'</td>';
+            if($conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE == $module->name){
+                print '      <td style="text-align: center;">'.img_picto('', "tick").'</td>';
+            }else{
+                if($module->hasIssues()) {
+                    print '      <td style="text-align: center; font-weight: bold; color: grey;">'.$langs->trans("Activate").'</td>';
+                } else {
+                    print '      <td style="text-align: center; font-weight: bold;"><a href="htaccessProtect_setupapage.php?o=1&action=change&name='.$module->name.'">'.$langs->trans("Activate").'</a></td>';
+                }
+            }
+            print '    </tr>';
+            $var = !$var;
+        }
+
+        print '  </table>';
+
+        // IP Table
+        print '<form id="ip_create" action="htaccessProtect_setupapage.php?o=1" method="POST">';
+        print '  <input style="display: none;" name="action" value="create"/>';
+        print '  <table class="noborder" width="100%">';
+        print '    <tr class="liste_titre">';
+        print '      <td>'.$langs->trans("Name").'</td>';
+        print '      <td>'.$langs->trans("Ip").'</td>';
+        print '      <td style="text-align: center;">'.$langs->trans("Whitelist").'</td>';
+        print '      <td style="text-align: center;">'.$langs->trans("Action").'</td>';
+        print '    </tr>';
+        $var = true;
+
+        if(count($ipList)){
+            foreach($ipList as $ip) {
+                print '    <tr '.$bc[$var].'>';
+                print '      <td width="60%">' . $ip->name . '</td>';
+                print '      <td>' . $ip->ip . '</td>';
+                print '      <td style="text-align: center;">' . (($ip->trusted)?img_picto($langs->trans("Whitelist"), "tick"):img_picto($langs->trans("Blacklist"), "delete")) . '</td>';
+                print '      <td style="text-align: center;">';
+                print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("Delete"), "delete").'</a>';
+                print '      </td>';
+                print '    </tr>';
+                $var=!$var;
+            }
+        } else {
+            print '    <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
+            print '      <td colspan="4" style="text-align: center;">' . $langs->trans("NoIp") . '</td>';
+            print '    </tr>';
+            $var=!$var;
+        }
+
         print '    <tr '.$bc[$var].'>';
-        print '      <td>'.$module->name.'</td>';
-        print '      <td>'.$module->desc.'</td>';
-        print '      <td>'.$module->getEtat().'</td>';
-        if($conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE == $module->name){
-            print '      <td style="text-align: center;">'.img_picto('', "tick").'</td>';
-        }else{
-            print '      <td style="text-align: center; font-weight: bold;"><a href="htaccessProtect_setupapage.php?o=1&action=change&name='.$module->name.'">'.$langs->trans("Activate").'</a></td>';
-        }
+        print '      <td width="60%">';
+        print '        <input class="flat" id="name" name="name" placeholder="' . $langs->trans("Name") . '"/>';
+        print '      </td>';
+        print '      <td>';
+        print '        <input class="flat" id="ip" name="ip" placeholder="' . $langs->trans("Ip") . '"/>';
+        print '      </td>';
+        print '      <td style="text-align: center;">';
+        print '        <input type="checkbox" class="flat" name="trusted" checked="checked"/>';
+        print '      </td>';
+        print '      <td style="text-align: center;">';
+        print '        <input type="submit" class="flat" value="' . $langs->trans("Add") . '" style="box-shadow:none;"/>';
+        print '      </td>';
         print '    </tr>';
-        $var = !$var;
-    }
 
-    print '  </table>';
+        print '  </table>';
+        print '</form>';
 
-    // IP Table
-    print '<form id="ip_create" action="htaccessProtect_setupapage.php?o=1" method="POST">';
-    print '  <input style="display: none;" name="action" value="create"/>';
-    print '  <table class="noborder" width="100%">';
-    print '    <tr class="liste_titre">';
-    print '      <td>'.$langs->trans("Name").'</td>';
-    print '      <td>'.$langs->trans("Ip").'</td>';
-    print '      <td style="text-align: center;">'.$langs->trans("Whitelist").'</td>';
-    print '      <td style="text-align: center;">'.$langs->trans("Action").'</td>';
-    print '    </tr>';
-    $var = true;
 
-    if(count($ipList)){
-        foreach($ipList as $ip) {
-            print '    <tr '.$bc[$var].'>';
-            print '      <td width="60%">' . $ip->name . '</td>';
-            print '      <td>' . $ip->ip . '</td>';
-            print '      <td style="text-align: center;">' . (($ip->trusted)?img_picto($langs->trans("Whitelist"), "tick"):img_picto($langs->trans("Blacklist"), "delete")) . '</td>';
-            print '      <td style="text-align: center;">';
-            print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&id=' . $ip->id . '" class="ip_delete">'.img_picto($langs->trans("Delete"), "delete").'</a>';
-            print '      </td>';
+        // Account Table
+        print '<form action="htaccessProtect_setupapage.php?o=1" method="POST">';
+        print '  <input style="display: none;" name="action" value="create"/>';
+        print '  <input style="display: none;" name="entity" value="account"/>';
+        print '  <table class="noborder" width="100%">';
+        print '    <tr class="liste_titre">';
+        print '      <td>'.$langs->trans("Pseudo").'</td>';
+        print '      <td>'.$langs->trans("Password").'</td>';
+        print '      <td style="text-align: center;">'.$langs->trans("Action").'</td>';
+        print '    </tr>';
+        $var = true;
+
+        if (count($accountList)) {
+            foreach($accountList as $account) {
+                print '    <tr '.$bc[$var].'>';
+                print '      <td width="60%">' . $account->pseudo . '</td>';
+                print '      <td>' . $account->passwd . '</td>';
+                print '      <td style="text-align: center;">';
+                print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&entity=account&id=' . $account->id . '">'.img_picto($langs->trans("Delete"), "delete").'</a>';
+                print '      </td>';
+                print '    </tr>';
+                $var=!$var;
+            }
+        } else {
+            print '    <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
+            print '      <td colspan="4" style="text-align: center;">' . $langs->trans("NoAccount") . '</td>';
             print '    </tr>';
             $var=!$var;
         }
-    } else {
-        print '    <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
-        print '      <td colspan="4" style="text-align: center;">' . $langs->trans("NoIp") . '</td>';
+
+        print '    <tr '.$bc[$var].'>';
+        print '      <td width="60%">';
+        print '        <input class="flat" name="pseudo" placeholder="' . $langs->trans("Pseudo") . '"/>';
+        print '      </td>';
+        print '      <td>';
+        print '        <input class="flat" name="passwd" placeholder="' . $langs->trans("Password") . '"/>';
+        print '      </td>';
+        print '      <td style="text-align: center;">';
+        print '        <input type="submit" class="flat" value="' . $langs->trans("Add") . '"/>';
+        print '      </td>';
         print '    </tr>';
-        $var=!$var;
-    }
 
-    print '    <tr '.$bc[$var].'>';
-    print '      <td width="60%">';
-    print '        <input class="flat" id="name" name="name" placeholder="' . $langs->trans("Name") . '"/>';
-    print '      </td>';
-    print '      <td>';
-    print '        <input class="flat" id="ip" name="ip" placeholder="' . $langs->trans("Ip") . '"/>';
-    print '      </td>';
-    print '      <td style="text-align: center;">';
-    print '        <input type="checkbox" class="flat" name="trusted" checked="checked"/>';
-    print '      </td>';
-    print '      <td style="text-align: center;">';
-    print '        <input type="submit" class="flat" value="' . $langs->trans("Add") . '" style="box-shadow:none;"/>';
-    print '      </td>';
-    print '    </tr>';
+        print '  </table>';
+        print '</form>';
 
-    print '  </table>';
-    print '</form>';
+        // Confirm JqueryUI dialogs
+        print '<div id="dialog-confirm" title="Erreur" style="display: none;">';
+        print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>' . $langs->trans("FillFields") . '</p>';
+        print '</div>';
 
+        print '<div id="dialog-confirm-ip" title="Erreur" style="display: none;">';
+        print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>' . $langs->trans("WrongIPFormat") . '</p>';
+        print '</div>';
 
-    // Account Table
-    print '<form action="htaccessProtect_setupapage.php?o=1" method="POST">';
-    print '  <input style="display: none;" name="action" value="create"/>';
-    print '  <input style="display: none;" name="entity" value="account"/>';
-    print '  <table class="noborder" width="100%">';
-    print '    <tr class="liste_titre">';
-    print '      <td>'.$langs->trans("Pseudo").'</td>';
-    print '      <td>'.$langs->trans("Password").'</td>';
-    print '      <td style="text-align: center;">'.$langs->trans("Action").'</td>';
-    print '    </tr>';
-    $var = true;
-
-    if (count($accountList)) {
-        foreach($accountList as $account) {
-            print '    <tr '.$bc[$var].'>';
-            print '      <td width="60%">' . $account->pseudo . '</td>';
-            print '      <td>' . $account->passwd . '</td>';
-            print '      <td style="text-align: center;">';
-            print '        <a href="htaccessProtect_setupapage.php?o=1&action=delete&entity=account&id=' . $account->id . '">'.img_picto($langs->trans("Delete"), "delete").'</a>';
-            print '      </td>';
-            print '    </tr>';
-            $var=!$var;
-        }
-    } else {
-        print '    <tr '.$bc[$var].' style="color:grey; font-style: italic;">';
-        print '      <td colspan="4" style="text-align: center;">' . $langs->trans("NoAccount") . '</td>';
-        print '    </tr>';
-        $var=!$var;
-    }
-
-    print '    <tr '.$bc[$var].'>';
-    print '      <td width="60%">';
-    print '        <input class="flat" name="pseudo" placeholder="' . $langs->trans("Pseudo") . '"/>';
-    print '      </td>';
-    print '      <td>';
-    print '        <input class="flat" name="passwd" placeholder="' . $langs->trans("Password") . '"/>';
-    print '      </td>';
-    print '      <td style="text-align: center;">';
-    print '        <input type="submit" class="flat" value="' . $langs->trans("Add") . '"/>';
-    print '      </td>';
-    print '    </tr>';
-
-    print '  </table>';
-    print '</form>';
-
-    print '<div id="dialog-confirm" title="Erreur" style="display: none;">';
-    print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>Veuillez renseigner tous les champs</p>';
-    print '</div>';
-
-    print '<div id="dialog-confirm-ip" title="Erreur" style="display: none;">';
-    print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>L\'adresse IP renseignée est mal formée</p>';
-    print '</div>';
-
-    print ' <script type="text/javascript" language="javascript">
+        print ' <script type="text/javascript" language="javascript">
             jQuery(document).ready(function() {
                 jQuery("#ip_create").submit(function(e) {
                     e.preventDefault();
@@ -422,92 +432,87 @@ if($o==1){
                 });
             });
             </script>';
-}
+        break;
 
-// Tab HtaccessContent
-if($o==2){
+    /* File Content Tab */
+    case 2:
+        // Module Files Table
+        print '<table class="noborder" width="100%">';
+        print '  <tr class="liste_titre">';
+        print '    <td>'.$langs->trans("GenerationHtaccess").'</td>';
+        print '  </tr>';
+        print '  <tr>';
+        print '    <td><pre style="padding: 5px"><code>';
+        print        htmlentities($obj->GenerateFileContent());
+        print '    </code></pre></td>';
+        print '  </tr>';
+        print '  <tr class="liste_titre">';
+        print '    <td>'.$langs->trans("GenerationHtpasswd").'</td>';
+        print '  </tr>';
+        print '  <tr>';
+        print '    <td><pre style="padding: 5px"><code>';
+        print        htmlentities($htaccessprotectaccount->GenerateFileContent());
+        print '    </code></pre></td>';
+        print '  </tr>';
+        print '</table>';
 
-    $classname = 'modGenerateHtaccess_'.$conf->global->MAIN_MODULE_HTACCESSPROTECT_MODGENERATE ;
-    require_once $dir.'/'.$classname.'.class.php';
-    $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
-
-    // tableau aff conf generer
-    print '<table class="noborder" width="100%">';
-    print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("GenerationHtaccess").'</td>';
-    print '  </tr>';
-    print '  <tr>';
-    print '    <td><pre style="padding: 5px"><code>';
-    print        htmlentities($obj->GenerateFileContent());
-    print '    </code></pre></td>';
-    print '  </tr>';
-    print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("GenerationHtpasswd").'</td>';
-    print '  </tr>';
-    print '  <tr>';
-    print '    <td><pre style="padding: 5px"><code>';
-    print        htmlentities($htaccessprotectaccount->GenerateFileContent());
-    print '    </code></pre></td>';
-    print '  </tr>';
-    print '</table>';
-
-    // tableau aff actuel
-    print '<table class="noborder" width="100%">';
-    print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("ContenuHtaccess").'</td>';
-    print '    <td align="right" style="padding-right: 5px">';
-    if ($fe_htaccess) {
-        if ($obj->getMD5() == md5_file(DOL_DOCUMENT_ROOT . "/.htaccess")) {
-            print img_picto("", "tick") . $langs->trans("FileOk");
+        // Server Files Table
+        print '<table class="noborder" width="100%">';
+        print '  <tr class="liste_titre">';
+        print '    <td>'.$langs->trans("ContenuHtaccess").'</td>';
+        print '    <td align="right" style="padding-right: 5px">';
+        if ($fe_htaccess) {
+            if ($obj->getMD5() == md5_file(DOL_DOCUMENT_ROOT . "/.htaccess")) {
+                print img_picto("", "tick") . $langs->trans("FileOk");
+            } else {
+                print '<a id="linksynchtaccess" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htaccess">'. img_picto("", "refresh") . $langs->trans("ReplaceFile") . '</a>';
+            }
         } else {
-            print '<a id="linksynchtaccess" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htaccess">'. img_picto("", "refresh") . $langs->trans("ReplaceFile") . '</a>';
+            $linksynchtaccess = ($htaccessprotectaccount->GenerateFileContent() != "" && $fe_htpasswd ) ? "linksynchtaccess" : "linksynchtaccessM";
+            print '<a id="'.$linksynchtaccess.'" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htaccess">'. img_picto("", "refresh") . $langs->trans("GenerateFile") . '</a>';
         }
-    } else {
-        $linksynchtaccess = ($htaccessprotectaccount->GenerateFileContent() != "" && $fe_htpasswd ) ? "linksynchtaccess" : "linksynchtaccessM";
-        print '<a id="'.$linksynchtaccess.'" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htaccess">'. img_picto("", "refresh") . $langs->trans("GenerateFile") . '</a>';
-    }
-    print '    </td>';
-    print '  </tr>';
-    print '  <tr>';
-    print '    <td colspan="2"><pre style="padding: 5px"><code>';
-    print $fe_htaccess ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT . "/.htaccess")) : $langs->trans("MissingFile") ;
-    print '    </code></pre></td>';
-    print '  </tr>';
-    print '  <tr class="liste_titre">';
-    print '    <td>'.$langs->trans("ContenuHtpasswd").'</td>';
-    print '    <td align="right" style="padding-right: 5px">';
-    if($fe_htpasswd){
-        if($htaccessprotectaccount->getMD5() == md5_file(DOL_DOCUMENT_ROOT."/.htpasswd")){
-            print img_picto("", "tick") . $langs->trans("FileOk");
-        }else{
-            print '<a id="linksynchtpasswd" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htpasswd">'. img_picto("", "refresh") . $langs->trans("ReplaceFile") . '</a>';
+        print '    </td>';
+        print '  </tr>';
+        print '  <tr>';
+        print '    <td colspan="2"><pre style="padding: 5px"><code>';
+        print $fe_htaccess ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT . "/.htaccess")) : $langs->trans("MissingFile") ;
+        print '    </code></pre></td>';
+        print '  </tr>';
+        print '  <tr class="liste_titre">';
+        print '    <td>'.$langs->trans("ContenuHtpasswd").'</td>';
+        print '    <td align="right" style="padding-right: 5px">';
+        if($fe_htpasswd){
+            if($htaccessprotectaccount->getMD5() == md5_file(DOL_DOCUMENT_ROOT."/.htpasswd")){
+                print img_picto("", "tick") . $langs->trans("FileOk");
+            }else{
+                print '<a id="linksynchtpasswd" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htpasswd">'. img_picto("", "refresh") . $langs->trans("ReplaceFile") . '</a>';
+            }
         }
-    }
-    else{
-        print '<a id="linksynchtpasswd" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htpasswd">'. img_picto("", "refresh") . $langs->trans("GenerateFile") . '</a>';
-    }
-    print '    </td>';
-    print '  </tr>';
-    print '  <tr>';
-    print '    <td colspan="2"><pre style="padding: 5px"><code>';
-    print $fe_htpasswd ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd")) : $langs->trans('MissingFile');
-    print '    </code></pre></td>';
-    print '  </tr>';
-    print '</table>';
+        else{
+            print '<a id="linksynchtpasswd" href="htaccessProtect_setupapage.php?o=2&action=sync&file=htpasswd">'. img_picto("", "refresh") . $langs->trans("GenerateFile") . '</a>';
+        }
+        print '    </td>';
+        print '  </tr>';
+        print '  <tr>';
+        print '    <td colspan="2"><pre style="padding: 5px"><code>';
+        print $fe_htpasswd ? htmlentities(file_get_contents(DOL_DOCUMENT_ROOT."/.htpasswd")) : $langs->trans('MissingFile');
+        print '    </code></pre></td>';
+        print '  </tr>';
+        print '</table>';
 
-    print '<p style="text-align: right"><a id="linkgeneration">';
+        print '<p style="text-align: right"><a id="linkgeneration">';
+        print '</a></p>';
 
-    print '</a></p>';
+        // Confirm JqueryUI dialogs
+        print '<div id="dialog-confirm2" title="Erreur" style="display: none;">';
+        print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>'.$langs->trans('AlertReplace').'</p>';
+        print '</div>';
 
-    print '<div id="dialog-confirm2" title="Erreur" style="display: none;">';
-    print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>'.$langs->trans('AlertReplace').'</p>';
-    print '</div>';
+        print '<div id="dialog-confirm3" title="Erreur" style="display: none;">';
+        print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>'.$langs->trans('AlertHtpasswdMissing').'</p>';
+        print '</div>';
 
-    print '<div id="dialog-confirm3" title="Erreur" style="display: none;">';
-    print '  <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>'.$langs->trans('AlertHtpasswdMissing').'</p>';
-    print '</div>';
-
-    print ' <script type="text/javascript" language="javascript">
+        print ' <script type="text/javascript" language="javascript">
             jQuery(document).ready(function() {
 
                 jQuery("#linksynchtpasswd, #linksynchtaccess ").click(function(e) {
@@ -547,8 +552,9 @@ if($o==2){
                 });
             });
             </script>';
+        break;
 }
+
 dol_fiche_end();
-// End of page
 llxFooter();
 $db->close();

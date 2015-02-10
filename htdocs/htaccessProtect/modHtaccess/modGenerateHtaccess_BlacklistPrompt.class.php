@@ -18,13 +18,13 @@
 
 require_once DOL_DOCUMENT_ROOT .'/htaccessProtect/modHtaccess/module_htaccessgenerator.php';
 
-class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
+class modGenerateHtaccess_BlacklistPrompt extends modGenerateHtaccess
 {
     function __construct($bddips, $accountList, $langs)
     {
         parent::__construct($bddips, $accountList, $langs);
         $this->name = preg_split("/_/", get_class($this))[1];
-        $this->desc = $this->langs->trans("WhitelistPromptDesc");
+        $this->desc = $this->langs->trans("BlacklistPromptDesc");
     }
 
     /**
@@ -34,12 +34,12 @@ class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
      */
     function GenerateFileContent(){
         $file = "";
-        $file .= "Order Deny,Allow \n";
+        $file .= "Order Deny, Allow \n";
         $file .= "Deny from all \n";
-        if(count($this->ipwhite)) {
+        if(count($this->ipblack)) {
             $file .= "\n";
-            foreach ($this->ipwhite as $ipb) {
-                $file .= "Allow from " . $ipb->ip . "\n";
+            foreach ($this->ipblack as $ipb) {
+                $file .= "Deny from " . $ipb->ip . "\n";
             }
         }
         $file .= "\n";
@@ -65,7 +65,7 @@ class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
     function Info(){
         $return = Array();
 
-        if(count($this->ipwhite) && !count($this->ipblack) && count($this->accountList)){
+        if(!count($this->ipwhite) && count($this->ipblack) && count($this->accountList)){
             $return[0] = 1;
             $return[1] = $this->langs->trans("ConfigurationOk");
             return $return;
@@ -77,15 +77,9 @@ class modGenerateHtaccess_WhitelistPrompt extends modGenerateHtaccess
             return $return;
         }
 
-        else if(!count($this->ipwhite)){
+        else if(count($this->ipwhite)){
             $return[0] = 2;
-            $return[1] = $this->langs->trans("ConfigurationNoWhite");
-            return $return;
-        }
-
-        else if(count($this->ipblack)){
-            $return[0] = 2;
-            $return[1] = $this->langs->trans("ConfigurationBlackNotSupported");
+            $return[1] = $this->langs->trans("ConfigurationWhiteNotSupported");
             return $return;
         }
 

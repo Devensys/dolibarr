@@ -1,5 +1,5 @@
 ############################################## HTACCESS / HTPASSWD ##############################################
-Title = Protection Htaccess et Htpasswd
+TitleModule = Protection Htaccess et Htpasswd
 DescModule = Gestion des connexions via les fichiers .htaccess et .htpasswd
 
 ################################# Onglets de la page de configuration du module #################################
@@ -43,9 +43,12 @@ Pseudo = Identifiant
 
 
 ################## Description des modèles de configuration de la sécurité htaccess / htpasswd ##################
-AllowWhiteBlackPromptDesc = Blacklisting d'IP, Whitelisting d'IP et Authentification par Prompt pour les autres
+WhitelistBlacklistPromptDesc = Blacklisting d'IP, Whitelisting d'IP et Authentification par Prompt pour les autres
 PromptDesc = Authentification par Prompt pour tous
 WhitelistPromptDesc = Whitelisting d'IP et Authentification par Prompt pour les autres
+BlacklistPromptDesc = Blacklisting d'IP et Authentification par Prompt pour les autres
+WhitelistDesc = Whitelisting d'IP, Accès refusé pour les autres
+BlacklistDesc = Blacklisting d'IP, Accès autorisé pour les autres
 
 ############################################# Contenu des fichiers #############################################
 GenerationHtaccess = Fichier .htaccess (module)
@@ -57,6 +60,8 @@ ReplaceFile = Remplacer le fichier
 
 
 ################################################## Alerte JS ###################################################
+FillFields = Veuillez renseigner tous les champs
+WrongIPFormat = L'adresse IP renseignée est mal formée
 AlertReplace = Attention vous êtes sur le point de supprimer votre configuration actuelle ! <br/>Voulez-vous continuer ?
 AlertHtpasswdMissing = Impossible de générer le fichier .htaccess sans fichier .htpasswd avec votre configuration du module. <br />Veuillez d'abord créer le fichier .htpasswd.
 
@@ -64,6 +69,15 @@ AlertHtpasswdMissing = Impossible de générer le fichier .htaccess sans fichier
 ################################################### Classes ####################################################
 ConfigurationOk = Configuration correcte
 ConfigurationBlackNotSupported = Les IP blacklistées ne seront pas prisent en compte
+ConfigurationBlackUserNotSupported = Les IP blacklistées et les comptes utilisateurs ne seront pas prisent en compte
+ConfigurationWhiteNotSupported = Les IP whitelistées ne seront pas prisent en compte
+ConfigurationWhiteUserNotSupported = Les IP whitelistées et les comptes utilisateurs ne seront pas prisent en compte
+ConfigurationIPNotSupported = Les IP whitelistées et blacklistées ne seront pas pris en compte
+ConfigurationUserNotSupported = Les comptes utilisateur ne seront pas pris en compte
 ConfigurationNoBlack = Il n'y a pas d'IP blacklistée
-ConfigurationIPNotSupported = Ce mode de prend pas en compte les whitelists et blacklists d'IP
+ConfigurationNoWhite = Il n'y a pas d'IP whitelistée
+ConfigurationNoWhiteBlack = Il n'y a pas d'IP whitelistée ou blacklistée
 ConfigurationUserNeeded = Ce mode nécessite au moins un compte utilisateur
+ConfigurationUserOrWhiteNeeded = Ce mode nécessite au moins un compte utilisateur ou une IP whitelistée
+ConfigurationWhiteNeeded = Ce mode nécessite au moins une IP whitelistée
+ConfigurationBlackNeeded = Ce mode nécessite au moins une IP blacklistée

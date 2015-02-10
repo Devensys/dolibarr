@@ -57,6 +57,10 @@ abstract class modGenerateHtaccess
         return  $return . $info[1];
     }
 
+    function hasIssues() {
+        return ($this->Info()[0] == 3) ? true : false;
+    }
+
     function getMD5(){
         return md5($this->GenerateFileContent());
     }
