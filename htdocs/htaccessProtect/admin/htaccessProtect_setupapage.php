@@ -236,7 +236,7 @@ print_fiche_titre($langs->trans('HTPTitleModule'));
 
 dol_fiche_head(array(array("?o=0", $langs->trans("GeneralInfo"), "ActiveConf"),
                      array("?o=1", $langs->trans("Configuration"), "ModConf"),
-                     array("?o=2", $langs->trans("FileContent"), "AffFiles")), $o);
+                     array("?o=2", $langs->trans("FileContent"), "AffFiles")), $o, $langs->trans("HTPTitleModule"), 0, 'lock@htaccessProtect');
 
 switch ($o) {
     /* General Informations Tab */
