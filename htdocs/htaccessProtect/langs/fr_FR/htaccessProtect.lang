@@ -1,6 +1,6 @@
 ############################################## HTACCESS / HTPASSWD ##############################################
-TitleModule = Protection Htaccess et Htpasswd
-DescModule = Gestion des connexions via les fichiers .htaccess et .htpasswd
+HTPTitleModule = Protection Htaccess et Htpasswd
+HTPDescModule = Gestion des connexions via les fichiers .htaccess et .htpasswd
 
 ################################# Onglets de la page de configuration du module #################################
 GeneralInfo = Informations générales

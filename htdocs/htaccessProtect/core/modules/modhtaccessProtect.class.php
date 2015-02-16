@@ -43,8 +43,8 @@ class modhtaccessProtect extends DolibarrModules{
         $this->numero = 260026;
         $this->rights_class = 'htaccessProtect';
         $this->family = "Devensys Secure Suite";
-        $this->name = "Protection Htaccess/Htpasswd";
-        $this->description = $langs->trans("DescModule");
+        $this->name = $langs->trans("HTPTitleModule");
+        $this->description = $langs->trans("HTPDescModule");
         $this->version = '1.0.1';
         $this->const_name = 'MAIN_MODULE_'.strtoupper(preg_replace('/^mod/i','',get_class($this)));
         $this->special = 2;
@@ -148,8 +148,12 @@ class modhtaccessProtect extends DolibarrModules{
         $htaccessprotectip = new Htaccessprotectip($this->db);
         $htaccessprotectaccount = new Htaccessprotectaccount($this->db);
         $obj = new $classname($htaccessprotectip, $htaccessprotectaccount, $langs);
-        file_put_contents(DOL_DOCUMENT_ROOT."/.htaccess", $obj->GenerateFileContent());
-        file_put_contents(DOL_DOCUMENT_ROOT."/.htpasswd", $htaccessprotectaccount->GenerateFileContent());
+
+        if (file_exists(DOL_DOCUMENT_ROOT."/.htaccess"))
+            file_put_contents(DOL_DOCUMENT_ROOT."/.htaccess", $obj->GenerateFileContent());
+
+        if (file_exists(DOL_DOCUMENT_ROOT."/.htaccess"))
+            file_put_contents(DOL_DOCUMENT_ROOT."/.htpasswd", $htaccessprotectaccount->GenerateFileContent());
 
         $result = $this->_load_tables('/htaccessProtect/sql/');
         return $this->_init($sql, $options);
@@ -165,8 +169,12 @@ class modhtaccessProtect extends DolibarrModules{
      */
     function remove($options = '') {
         // Configuration files delete
-        unlink(DOL_DOCUMENT_ROOT."/.htaccess");
-        unlink(DOL_DOCUMENT_ROOT."/.htpasswd");
+        if (file_exists(DOL_DOCUMENT_ROOT."/.htaccess"))
+//            unlink(DOL_DOCUMENT_ROOT."/.htaccess");
+
+        if (file_exists(DOL_DOCUMENT_ROOT."/.htpasswd"))
+//            unlink(DOL_DOCUMENT_ROOT."/.htpasswd");
+
         $sql = array();
         return $this->_remove($sql, $options);
     }
